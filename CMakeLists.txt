@@ -9,7 +9,10 @@ IF(Boost_FOUND)
   LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 ENDIF(Boost_FOUND)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY})
+SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY} baseserver)
+
+add_subdirectory(baseserver)
+
 
 add_subdirectory(orquestrador)
 add_subdirectory(servidor)
