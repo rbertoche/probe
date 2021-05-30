@@ -1,7 +1,3 @@
-
-//
-// server.cpp
-// ~~~~~~~~~~
 //
 // Copyright (c) 2003-2008 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 // Copyright (c) 2021 Raphael Bertoche (rbertoche@cpti.cetuc.puc-rio.br)
