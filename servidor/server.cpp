@@ -36,11 +36,10 @@ public:
 		std::cerr << message_ << std::endl;
 
 
-		socket_.async_send_to(
-					buffer(message_), sender,
-					boost::bind(&Server::handle_send_to,
-						    static_cast<BaseServer*>(this),
-						    placeholders::error));
+		socket_.async_send_to(buffer(message_), sender,
+				      boost::bind(&Server::handle_send_to,
+						  static_cast<BaseServer*>(this),
+						  placeholders::error));
 	}
 };
 
