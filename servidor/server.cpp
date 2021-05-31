@@ -46,7 +46,7 @@ public:
 		message_ = os.str();
 		cerr << message_;
 
-		socket_.async_send_to(buffer(message_), recipient,
+		socket_.async_send_to(buffer(data), recipient,
 				      boost::bind(&Server::handle_send_to,
 						  static_cast<BaseServer*>(this),
 						  placeholders::error));
