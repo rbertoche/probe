@@ -54,7 +54,7 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 							placeholders::error,
 							placeholders::bytes_transferred));
 
-		respond(sender_endpoint_);
+		respond(sender_endpoint_, buf);
 	}
 }
 

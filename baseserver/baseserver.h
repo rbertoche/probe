@@ -32,12 +32,14 @@ protected:
 	void handle_receive_from(const boost::system::error_code& error,
 				 size_t bytes_recvd);
 
-	virtual void respond(ip::udp::endpoint sender) = 0;
+	virtual void respond(ip::udp::endpoint sender,
+			     std::vector<char>& data) = 0;
 
 private:
 	ip::udp::endpoint sender_endpoint_;
 	enum { max_length = 1024 };
 	char data_[max_length];
+
 protected:
 	ip::udp::socket socket_;
 
@@ -60,10 +62,10 @@ protected:
 		   const ip::address& multicast_address,
 		   const ip::address& listen_address=unspecified);
 
-	virtual void respond(ip::udp::endpoint sender) = 0;
+	virtual void respond(ip::udp::endpoint sender,
+			     std::vector<char>& data) = 0;
 
 	void handle_send_to(const boost::system::error_code& error);
-
 
 	void handle_timeout(const boost::system::error_code& error);
 

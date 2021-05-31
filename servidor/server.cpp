@@ -27,7 +27,8 @@ public:
 		     listen_address)
 	{}
 
-	virtual void respond(ip::udp::endpoint sender){
+	virtual void respond(ip::udp::endpoint recipient,
+			     std::vector<char>& data){
 
 
 		std::ostringstream os;
@@ -36,7 +37,7 @@ public:
 		std::cerr << message_ << std::endl;
 
 
-		socket_.async_send_to(buffer(message_), sender,
+		socket_.async_send_to(buffer(message_), recipient,
 				      boost::bind(&Server::handle_send_to,
 						  static_cast<BaseServer*>(this),
 						  placeholders::error));
