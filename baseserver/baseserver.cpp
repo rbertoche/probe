@@ -22,14 +22,15 @@ Receiver::Receiver(boost::asio::io_service& io_service,
 	ip::udp::endpoint listen_endpoint(listen_address, multicast_port);
 	socket_.open(listen_endpoint.protocol());
 	socket_.set_option(ip::udp::socket::reuse_address(true));
+	socket_.bind(listen_endpoint);
 
 	// Join the multicast group.
 	ip::multicast::join_group option(multicast_address);
 	boost::system::error_code ec;
 	socket_.set_option( option, ec);
 	if (listen_address != unspecified){
-		socket_.bind(listen_endpoint);
-		cerr << "Ouvindo em " << listen_address << ":" << multicast_port << endl;
+//		socket_.bind(listen_endpoint);
+//		cerr << "Ouvindo em " << listen_address << ":" << multicast_port << endl;
 	}
 
 	socket_.async_receive_from( buffer(data_, max_length), sender_endpoint_,
