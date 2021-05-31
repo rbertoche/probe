@@ -11,6 +11,10 @@
 
 #include "baseserver.h"
 
+const short multicast_port = 9921;
+
+const int max_message_count = 10;
+
 using namespace std;
 
 Receiver::Receiver(boost::asio::io_service& io_service,

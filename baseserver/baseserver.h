@@ -15,10 +15,6 @@
 #include <boost/asio.hpp>
 
 
-const short multicast_port = 9922;
-
-const int max_message_count = 10;
-
 using namespace boost::asio;
 
 
