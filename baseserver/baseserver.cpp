@@ -48,7 +48,7 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 		cout.write(data_, bytes_recvd);
 		cout << endl;
 
-		vector<char> buf(max_length);
+		vector<char> buf(bytes_recvd);
 		socket_.async_receive_from( buffer(&buf[0], buf.size()), sender_endpoint_,
 					    boost::bind(&Receiver::handle_receive_from, this,
 							placeholders::error,
