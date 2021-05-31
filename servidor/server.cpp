@@ -72,9 +72,9 @@ int main(int argc, char* argv[])
 		Server server(io_service,
 				ip::address::from_string(argv[1]),
 				ip::address::from_string(argv[2]));
-		vector<char> empty(10);
+		vector<char> dummy(10);
 		server.respond(server.getEndpoint(),
-			       empty);
+			       dummy);
 		io_service.run();
 	}
 	catch (exception& e)
