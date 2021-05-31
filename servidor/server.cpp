@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -30,13 +31,13 @@ public:
 	virtual void respond(ip::udp::endpoint recipient,
 			     std::vector<char>& data){
 
-
 		std::ostringstream os;
 		os << "Message " << message_count_++ << ": \"";
+
 		for (std::vector<char>::iterator it = data.begin();
 		     it < data.end();
 		     it++){
-			os << std::hex << data[0] << " ";
+			os << std::setw(2) << std::hex << int(*it) << " ";
 		}
 		os << "\"" << std::endl;
 		os << "recipient: " << recipient << std::endl;
