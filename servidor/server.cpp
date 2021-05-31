@@ -32,10 +32,16 @@ public:
 
 
 		std::ostringstream os;
-		os << "Message " << message_count_++;
+		os << "Message " << message_count_++ << ": \"";
+		for (std::vector<char>::iterator it = data.begin();
+		     it < data.end();
+		     it++){
+			os << std::hex << data[0] << " ";
+		}
+		os << "\"" << std::endl;
+		os << "recipient: " << recipient << std::endl;
 		message_ = os.str();
-		std::cerr << message_ << std::endl;
-
+		std::cerr << message_;
 
 		socket_.async_send_to(buffer(message_), recipient,
 				      boost::bind(&Server::handle_send_to,
