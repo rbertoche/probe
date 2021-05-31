@@ -18,14 +18,10 @@ Receiver::Receiver(boost::asio::io_service& io_service,
 		   const boost::asio::ip::address& listen_address)
 	: socket_(io_service)
 {
-	cerr.flush();
 	// Create the socket so that multiple may be bound to the same address.
 	ip::udp::endpoint listen_endpoint(listen_address, multicast_port);
-	cerr.flush();
 	socket_.open(listen_endpoint.protocol());
-	cerr.flush();
 	socket_.set_option(ip::udp::socket::reuse_address(true));
-	cerr.flush();
 
 	// Join the multicast group.
 	ip::multicast::join_group option(multicast_address);
