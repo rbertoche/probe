@@ -34,14 +34,14 @@ public:
 			     vector<char>& data){
 
 		ostringstream os;
-		os << "Message " << message_count_++ << ": \"";
+		os << "Message " << message_count_++ << ": ";
 
 		for (vector<char>::iterator it = data.begin();
 		     it < data.end();
 		     it++){
 			os << setw(2) << hex << unsigned(*it) << " ";
 		}
-		os << "\"" << endl;
+		os << "FIM" << endl;
 		os << "recipient: " << recipient << endl;
 		message_ = os.str();
 		cerr << message_;
