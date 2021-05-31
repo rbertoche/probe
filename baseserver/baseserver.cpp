@@ -77,9 +77,12 @@ ip::address Receiver::_probe_local_endpoint()
 }
 
 const ip::address Receiver::local_endpoint()
-ip::udp::endpoint BaseServer::getEndpoint()
 {
 	return _local_endpoint;
+}
+
+ip::udp::endpoint BaseServer::getEndpoint()
+{
 	return endpoint_;
 }
 
