@@ -37,6 +37,7 @@ public:
 		if (sender.address() == local_endpoint()){
 			return;
 		}
+
 		ostringstream os;
 		os << "Message " << message_count_++ << ": ";
 
