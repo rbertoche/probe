@@ -58,6 +58,7 @@ public:
 protected:
 	BaseServer(io_service &io_service,
 		   const ip::address& multicast_address,
+		   const ip::address& listen_address=unspecified);
 
 	virtual void respond(ip::udp::endpoint sender) = 0;
 
