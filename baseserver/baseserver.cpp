@@ -59,6 +59,11 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 }
 
 
+ip::udp::endpoint BaseServer::getEndpoint()
+{
+	return endpoint_;
+}
+
 BaseServer::BaseServer(io_service& io_service, const ip::address& multicast_address, const ip::address& listen_address)
 	: Receiver(io_service,
 		   multicast_address,

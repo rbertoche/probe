@@ -51,6 +51,10 @@ const ip::address unspecified(ip::address::from_string("255.255.255.255"));
 class BaseServer
 	: public Receiver
 {
+public:
+
+	ip::udp::endpoint getEndpoint();
+
 protected:
 	BaseServer(io_service &io_service,
 		   const ip::address& multicast_address,
