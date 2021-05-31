@@ -17,6 +17,7 @@
 #include "baseserver.h"
 
 using namespace std;
+using namespace boost::asio;
 
 class Server :
 	public BaseServer
