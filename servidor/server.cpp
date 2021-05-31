@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 		Server server(io_service,
 				ip::address::from_string(argv[1]),
 				ip::address::from_string(argv[2]));
-		std::vector<char> empty(255);
+		std::vector<char> empty(10);
 		server.respond(server.getEndpoint(),
 			       empty);
 		io_service.run();
