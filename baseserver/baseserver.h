@@ -18,10 +18,22 @@
 using namespace boost::asio;
 
 
+class SocketInterface{
+	// Permite acessar o socket fora do construtor
+	// O nome socket_ visivel externamente nao está
+	// acessível aqui, portanto é necessário esse método
+	// Dentro do construtor virtual nao funciona
+protected:
+	virtual ip::udp::socket& socket() = 0;
+};
+
+
 class Receiver
+	: public SocketInterface
 {
 protected:
 	Receiver(io_service& io_service,
+		 ip::udp::socket& socket_,
 		 const ip::address& multicast_address,
 		 const ip::address& listen_address);
 
@@ -35,28 +47,20 @@ private:
 	ip::udp::endpoint sender_endpoint_;
 	enum { max_length = 1024 };
 	char data_[max_length];
-
-protected:
-	ip::udp::socket socket_;
-
-
 };
 
-const ip::address unspecified(ip::address::from_string("255.255.255.255"));
+const ip::address default_listen_address(ip::address::from_string("0.0.0.0"));
 
-
-
-class BaseServer
-	: public Receiver
+class Sender
+	: public SocketInterface
 {
 public:
 
 	ip::udp::endpoint getEndpoint();
 
 protected:
-	BaseServer(io_service &io_service,
-		   const ip::address& multicast_address,
-		   const ip::address& listen_address=unspecified);
+	Sender(io_service &io_service,
+	       const ip::address& multicast_address);
 
 	virtual void respond(ip::udp::endpoint sender,
 			     std::vector<char>& data) = 0;
@@ -71,3 +75,33 @@ protected:
 	ip::udp::endpoint endpoint_;
 };
 #endif // BASESERVER_H
+
+class SocketOwner // cada objeto deve possuir no máximo 1 recurso?
+		  // na verdade esse objeto existe para prover um
+		  // socket que permitiu desacoplar as outras classes
+{
+private:
+	ip::udp::socket socket__;
+protected:
+	SocketOwner(io_service &io_service)
+		: socket__(io_service)
+		, socket_(socket__)
+	{}
+	ip::udp::socket& socket_;
+};
+
+
+class BaseServer
+	: public SocketOwner,
+		public Receiver,
+		public Sender
+{
+public:
+	BaseServer(io_service &io_service,
+		   const ip::address& multicast_address,
+		   const ip::address& listen_address=default_listen_address);
+
+protected:
+	virtual ip::udp::socket& socket();
+
+};
