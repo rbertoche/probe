@@ -39,7 +39,7 @@ public:
 		for (vector<char>::iterator it = data.begin();
 		     it < data.end();
 		     it++){
-			os << setw(2) << hex << int(*it) << " ";
+			os << setw(2) << hex << unsigned(*it) << " ";
 		}
 		os << "\"" << endl;
 		os << "recipient: " << recipient << endl;
