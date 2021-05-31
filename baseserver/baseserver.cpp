@@ -59,6 +59,16 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 }
 
 
+BaseServer::BaseServer(io_service& io_service, const ip::address& multicast_address, const ip::address& listen_address)
+	: Receiver(io_service,
+		   multicast_address,
+		   listen_address)
+	, timer_(io_service)
+	, message_count_(0)
+	, endpoint_(multicast_address, multicast_port)
+{
+}
+
 void BaseServer::handle_send_to(const boost::system::error_code& error)
 {
 	if (!error && message_count_ < max_message_count)

@@ -54,15 +54,6 @@ class BaseServer
 protected:
 	BaseServer(io_service &io_service,
 		   const ip::address& multicast_address,
-		   const ip::address& listen_address=unspecified)
-	: Receiver(io_service,
-		   multicast_address,
-		   listen_address)
-	, timer_(io_service)
-	, message_count_(0)
-	, endpoint_(multicast_address, multicast_port)
-	{
-	}
 
 	virtual void respond(ip::udp::endpoint sender) = 0;
 
