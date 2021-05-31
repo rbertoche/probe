@@ -21,7 +21,6 @@ Receiver::Receiver(boost::asio::io_service& io_service,
 		   const boost::asio::ip::address& multicast_address,
 		   const boost::asio::ip::address& listen_address)
 	: socket_(io_service)
-	, _local_endpoint(_probe_local_endpoint())
 {
 	// Create the socket so that multiple may be bound to the same address.
 	ip::udp::endpoint listen_endpoint(listen_address, multicast_port);
@@ -34,7 +33,6 @@ Receiver::Receiver(boost::asio::io_service& io_service,
 	boost::system::error_code ec;
 	socket_.set_option( option, ec);
 	if (listen_address != unspecified){
-//		Aqui houve uma viagem da minha parte, o default pode ser 0.0.0.0
 //		socket_.bind(listen_endpoint);
 //		cerr << "Ouvindo em " << listen_address << ":" << multicast_port << endl;
 	}
@@ -64,22 +62,6 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 	}
 }
 
-ip::address Receiver::_probe_local_endpoint()
-{
-	boost::asio::io_service netService;
-	ip::udp::resolver   resolver(netService);
-	ip::udp::resolver::query query(ip::udp::v4(), "192.168.122.1", "");
-	ip::udp::resolver::iterator endpoints = resolver.resolve(query);
-	ip::udp::endpoint ep = *endpoints;
-	ip::udp::socket socket(netService);
-	socket.connect(ep);
-	return socket.local_endpoint().address();
-}
-
-const ip::address Receiver::local_endpoint()
-{
-	return _local_endpoint;
-}
 
 ip::udp::endpoint BaseServer::getEndpoint()
 {
