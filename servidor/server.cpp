@@ -16,6 +16,8 @@
 
 #include "baseserver.h"
 
+using namespace std;
+
 class Server :
 	public BaseServer
 {
@@ -29,20 +31,20 @@ public:
 	{}
 
 	virtual void respond(ip::udp::endpoint recipient,
-			     std::vector<char>& data){
+			     vector<char>& data){
 
-		std::ostringstream os;
+		ostringstream os;
 		os << "Message " << message_count_++ << ": \"";
 
-		for (std::vector<char>::iterator it = data.begin();
+		for (vector<char>::iterator it = data.begin();
 		     it < data.end();
 		     it++){
-			os << std::setw(2) << std::hex << int(*it) << " ";
+			os << setw(2) << hex << int(*it) << " ";
 		}
-		os << "\"" << std::endl;
-		os << "recipient: " << recipient << std::endl;
+		os << "\"" << endl;
+		os << "recipient: " << recipient << endl;
 		message_ = os.str();
-		std::cerr << message_;
+		cerr << message_;
 
 		socket_.async_send_to(buffer(message_), recipient,
 				      boost::bind(&Server::handle_send_to,
@@ -58,11 +60,11 @@ int main(int argc, char* argv[])
 	{
 		if (argc != 3)
 		{
-			std::cerr << "Usage: receiver <listen_address> <multicast_address>\n";
-			std::cerr << "  For IPv4, try:\n";
-			std::cerr << "    receiver 0.0.0.0 239.255.0.1\n";
-			std::cerr << "  For IPv6, try:\n";
-			std::cerr << "    receiver 0::0 ff31::8000:1234\n";
+			cerr << "Usage: receiver <listen_address> <multicast_address>\n";
+			cerr << "  For IPv4, try:\n";
+			cerr << "    receiver 0.0.0.0 239.255.0.1\n";
+			cerr << "  For IPv6, try:\n";
+			cerr << "    receiver 0::0 ff31::8000:1234\n";
 			return 1;
 		}
 
@@ -70,14 +72,14 @@ int main(int argc, char* argv[])
 		Server server(io_service,
 				ip::address::from_string(argv[1]),
 				ip::address::from_string(argv[2]));
-		std::vector<char> empty(10);
+		vector<char> empty(10);
 		server.respond(server.getEndpoint(),
 			       empty);
 		io_service.run();
 	}
-	catch (std::exception& e)
+	catch (exception& e)
 	{
-		std::cerr << "Exception: " << e.what() << "\n";
+		cerr << "Exception: " << e.what() << "\n";
 	}
 
 	return 0;

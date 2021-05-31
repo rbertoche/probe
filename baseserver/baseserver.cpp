@@ -11,19 +11,21 @@
 
 #include "baseserver.h"
 
+using namespace std;
+
 Receiver::Receiver(boost::asio::io_service& io_service,
 		   const boost::asio::ip::address& multicast_address,
 		   const boost::asio::ip::address& listen_address)
 	: socket_(io_service)
 {
-	std::cerr.flush();
+	cerr.flush();
 	// Create the socket so that multiple may be bound to the same address.
 	ip::udp::endpoint listen_endpoint(listen_address, multicast_port);
-	std::cerr.flush();
+	cerr.flush();
 	socket_.open(listen_endpoint.protocol());
-	std::cerr.flush();
+	cerr.flush();
 	socket_.set_option(ip::udp::socket::reuse_address(true));
-	std::cerr.flush();
+	cerr.flush();
 
 	// Join the multicast group.
 	ip::multicast::join_group option(multicast_address);
@@ -31,14 +33,14 @@ Receiver::Receiver(boost::asio::io_service& io_service,
 	socket_.set_option( option, ec);
 	if (listen_address != unspecified){
 		socket_.bind(listen_endpoint);
-		std::cerr << "Ouvindo em " << listen_address << ":" << multicast_port << std::endl;
+		cerr << "Ouvindo em " << listen_address << ":" << multicast_port << endl;
 	}
 
 	socket_.async_receive_from( buffer(data_, max_length), sender_endpoint_,
 				    boost::bind(&Receiver::handle_receive_from, this,
 						placeholders::error,
 						placeholders::bytes_transferred));
-	std::cerr << "Ouvindo MC em " << multicast_address << ":" << multicast_port<< std::endl;
+	cerr << "Ouvindo MC em " << multicast_address << ":" << multicast_port<< endl;
 }
 
 
@@ -46,10 +48,10 @@ void Receiver::handle_receive_from(const boost::system::error_code& error, size_
 {
 	if (!error)
 	{
-		std::cout.write(data_, bytes_recvd);
-		std::cout << std::endl;
+		cout.write(data_, bytes_recvd);
+		cout << endl;
 
-		std::vector<char> buf(max_length);
+		vector<char> buf(max_length);
 		socket_.async_receive_from( buffer(&buf[0], buf.size()), sender_endpoint_,
 					    boost::bind(&Receiver::handle_receive_from, this,
 							placeholders::error,
@@ -90,7 +92,7 @@ void BaseServer::handle_timeout(const boost::system::error_code& error)
 {
 	if (!error)
 	{
-		std::ostringstream os;
+		ostringstream os;
 		os << "Message " << message_count_++;
 		message_ = os.str();
 
