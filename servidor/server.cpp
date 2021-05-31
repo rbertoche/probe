@@ -20,13 +20,13 @@ using namespace std;
 using namespace boost::asio;
 
 class Server :
-	public BaseServer
+	public BaseMulticastServer
 {
 public:
 	Server(io_service &io_service,
 	       const ip::address& multicast_address,
 	       const ip::address& listen_address)
-	: BaseServer(io_service,
+	: BaseMulticastServer(io_service,
 		     multicast_address,
 		     listen_address)
 	{}
@@ -49,7 +49,7 @@ public:
 
 		socket_.async_send_to(buffer(data), sender,
 				      boost::bind(&Server::handle_send_to,
-						  static_cast<BaseServer*>(this),
+						  static_cast<BaseMulticastServer*>(this),
 						  placeholders::error));
 	}
 };
