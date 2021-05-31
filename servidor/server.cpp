@@ -30,7 +30,7 @@ public:
 		     listen_address)
 	{}
 
-	virtual void respond(ip::udp::endpoint recipient,
+	virtual void respond(ip::udp::endpoint sender,
 			     vector<char>& data){
 
 		ostringstream os;
@@ -42,11 +42,11 @@ public:
 			os << setw(2) << hex << unsigned(*it) << " ";
 		}
 		os << "FIM" << endl;
-		os << "recipient: " << recipient << endl;
+		os << "recipient: " << sender << endl;
 		message_ = os.str();
 		cerr << message_;
 
-		socket_.async_send_to(buffer(data), recipient,
+		socket_.async_send_to(buffer(data), sender,
 				      boost::bind(&Server::handle_send_to,
 						  static_cast<BaseServer*>(this),
 						  placeholders::error));
