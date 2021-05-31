@@ -32,11 +32,15 @@ protected:
 			     std::vector<char>& data) = 0;
 
 private:
+	ip::address _probe_local_endpoint();
+	ip::address _local_endpoint;
+
 	ip::udp::endpoint sender_endpoint_;
 	enum { max_length = 1024 };
 	char data_[max_length];
 
 protected:
+	const ip::address local_endpoint();
 	ip::udp::socket socket_;
 
 
