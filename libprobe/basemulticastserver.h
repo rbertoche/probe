@@ -28,7 +28,7 @@ protected:
 				 size_t bytes_recvd);
 
 	virtual void respond(ip::udp::endpoint sender,
-			     const std::vector<char>& data) = 0;
+			     const std::vector<unsigned char>& data) = 0;
 
 private:
 	ip::udp::endpoint sender_endpoint_;
@@ -47,7 +47,7 @@ protected:
 	void handle_send_to(const boost::system::error_code& error);
 
 	void send_to(ip::udp::socket& socket_,
-		     const std::vector<char>& data,
+		     const std::vector<unsigned char>& data,
 		     ip::udp::endpoint destination);
 
 	int message_count_;

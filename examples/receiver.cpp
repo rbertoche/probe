@@ -25,7 +25,7 @@ public:
   {
     // Create the socket so that multiple may be bound to the same address.
     boost::asio::ip::udp::endpoint listen_endpoint(
-        listen_address, multicast_port);
+	listen_address, multicast_port);
     socket_.open(listen_endpoint.protocol());
     socket_.set_option(boost::asio::ip::udp::socket::reuse_address(true));
     socket_.bind(listen_endpoint);
@@ -34,15 +34,15 @@ public:
     boost::asio::ip::multicast::join_group option(multicast_address);
     boost::system::error_code ec;
     socket_.set_option( option, ec);
-                    
+
 //    socket_.set_option(
 //        boost::asio::ip::multicast::join_group(multicast_address));
 
     socket_.async_receive_from(
-        boost::asio::buffer(data_, max_length), sender_endpoint_,
-        boost::bind(&receiver::handle_receive_from, this,
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
+	boost::asio::buffer(data_, max_length), sender_endpoint_,
+	boost::bind(&receiver::handle_receive_from, this,
+	  boost::asio::placeholders::error,
+	  boost::asio::placeholders::bytes_transferred));
   }
 
   void handle_receive_from(const boost::system::error_code& error,
@@ -54,10 +54,10 @@ public:
       std::cout << std::endl;
 
       socket_.async_receive_from(
-          boost::asio::buffer(data_, max_length), sender_endpoint_,
-          boost::bind(&receiver::handle_receive_from, this,
-            boost::asio::placeholders::error,
-            boost::asio::placeholders::bytes_transferred));
+	  boost::asio::buffer(data_, max_length), sender_endpoint_,
+	  boost::bind(&receiver::handle_receive_from, this,
+	    boost::asio::placeholders::error,
+	    boost::asio::placeholders::bytes_transferred));
     }
   }
 
@@ -84,8 +84,8 @@ int main(int argc, char* argv[])
 
     boost::asio::io_service io_service;
     receiver r(io_service,
-        boost::asio::ip::address::from_string(argv[1]),
-        boost::asio::ip::address::from_string(argv[2]));
+	boost::asio::ip::address::from_string(argv[1]),
+	boost::asio::ip::address::from_string(argv[2]));
     io_service.run();
   }
   catch (std::exception& e)

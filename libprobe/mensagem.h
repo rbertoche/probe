@@ -31,23 +31,23 @@ public:
 		 unsigned tamanho,
 		 unsigned repeticoes);
 
-	static Mensagem unpack(const vector<char>& data);
+	static Mensagem unpack(const vector<unsigned char>& data);
 
-	static vector<char> pack(const Mensagem& msg);
+	static vector<unsigned char> pack(const Mensagem& msg);
 
-	Tipo tipo(){
+	Tipo tipo() const{
 		return tipo_;
 	}
 
-	Origem origem(){
+	Origem origem() const{
 		return origem_;
 	}
 
-	unsigned tamanho(){
+	unsigned tamanho() const{
 		return tamanho_;
 	}
 
-	unsigned repeticoes(){
+	unsigned repeticoes() const{
 		return repeticoes_;
 	}
 

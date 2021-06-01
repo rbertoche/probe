@@ -17,11 +17,11 @@
 using namespace std;
 using namespace boost::asio;
 
-class Server :
+class Servidor :
 	public BaseMulticastServer
 {
 public:
-	Server(io_service &io_service,
+	Servidor(io_service &io_service,
 	       const ip::address& multicast_address,
 	       unsigned short port)
 	: BaseMulticastServer(io_service,
@@ -30,19 +30,19 @@ public:
 	{}
 
 	void start(){
-		vector<char> dummy(10);
+		vector<unsigned char> dummy(10);
 		respond(endpoint_,
 			dummy);
 
 	}
 
 	virtual void respond(ip::udp::endpoint sender,
-			     const vector<char>& data){
+			     const vector<unsigned char>& data){
 
 		ostringstream os;
 		os << "Message " << message_count_++ << ": ";
 
-		for (vector<char>::const_iterator it = data.begin();
+		for (vector<unsigned char>::const_iterator it = data.begin();
 		     it < data.end();
 		     it++){
 			os << setw(2) << hex << unsigned(*it) << " ";
@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
 		}
 
 		io_service io_service;
-		Server server(io_service,
+		Servidor server(io_service,
 				ip::address::from_string(argv[1]),
 				atoi(argv[2]));
 		server.start();

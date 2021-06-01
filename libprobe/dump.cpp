@@ -7,8 +7,8 @@
 using namespace std;
 
 
-void dump(const vector<char>& data){
-	for (vector<char>::const_iterator it = data.begin();
+void dump(const vector<unsigned char>& data){
+	for (vector<unsigned char>::const_iterator it = data.begin();
 	     it < data.end();
 	     it++){
 		cerr << setw(2) << hex << unsigned(*it) << " ";

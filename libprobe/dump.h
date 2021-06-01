@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-void dump(const std::vector<char>& data);
+void dump(const std::vector<unsigned char>& data);
 
 
 #endif // DUMP_H

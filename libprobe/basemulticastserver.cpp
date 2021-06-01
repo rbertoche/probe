@@ -55,16 +55,17 @@ void MulticastReceiver::handle_receive_from(ip::udp::socket* socket_,
 {
 	if (!error)
 	{
-		cout.write(data_, bytes_recvd);
+		cout.write((char *) data_, bytes_recvd);
 		cout << endl;
 
-		vector<char> buf(bytes_recvd);
-		socket_->async_receive_from( buffer(&buf[0], buf.size()), sender_endpoint_,
-					    boost::bind(&MulticastReceiver::handle_receive_from,
-							this,
-							socket_,
-							placeholders::error,
-							placeholders::bytes_transferred));
+		vector<unsigned char> buf(bytes_recvd);
+		socket_->async_receive_from( buffer(&buf[0], buf.size()),
+					     sender_endpoint_,
+					     boost::bind(&MulticastReceiver::handle_receive_from,
+							 this,
+							 socket_,
+							 placeholders::error,
+							 placeholders::bytes_transferred));
 
 		respond(sender_endpoint_, buf);
 	}
@@ -102,7 +103,7 @@ void UDPSender::handle_send_to(const boost::system::error_code& error)
 }
 
 void UDPSender::send_to(ip::udp::socket& socket_,
-			const std::vector<char>& data,
+			const std::vector<unsigned char>& data,
 			ip::udp::endpoint destination)
 {
 	socket_.async_send_to(buffer(data),
