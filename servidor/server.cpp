@@ -14,7 +14,7 @@
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
-#include "baseserver.h"
+#include "basemulticastserver.h"
 
 using namespace std;
 using namespace boost::asio;

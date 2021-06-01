@@ -9,7 +9,7 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <iostream>
 
-#include "baseserver.h"
+#include "basemulticastserver.h"
 
 const short multicast_port = 9921;
 

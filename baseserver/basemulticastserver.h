@@ -9,6 +9,7 @@
 #define BASESERVER_H
 
 #include <boost/asio.hpp>
+#include <socketowner.h>
 
 
 using namespace boost::asio;
@@ -46,22 +47,6 @@ protected:
 	int message_count_;
 	std::string message_;
 	ip::udp::endpoint endpoint_;
-};
-
-template <typename Socket>
-class SocketOwner // cada objeto deve possuir no máximo 1 recurso?
-		  // na verdade esse objeto existe para prover um
-		  // socket que permitiu desacoplar as outras classes
-{
-private:
-	Socket socket__;
-protected:
-	SocketOwner(io_service &io_service)
-		: socket__(io_service)
-		, socket_(socket__)
-	{}
-public:
-	Socket& socket_;
 };
 
 class BaseMulticastServer
