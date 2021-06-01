@@ -1,0 +1,17 @@
+
+#include <iostream>
+#include <iomanip>
+
+#include <vector>
+
+using namespace std;
+
+
+void dump(const vector<char>& data){
+	for (vector<char>::const_iterator it = data.begin();
+	     it < data.end();
+	     it++){
+		cerr << setw(2) << hex << unsigned(*it) << " ";
+	}
+	cerr << "FIM" << endl;
+}
