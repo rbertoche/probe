@@ -39,16 +39,10 @@ public:
 				      port)
 	{}
 
-	void start(){
-		vector<char> dummy(10);
-		respond(endpoint_,
-			dummy);
-	}
-
 	virtual void respond(ip::udp::endpoint sender,
 			     vector<char>& data){
-
 		ostringstream os;
+
 		os << "Message " << message_count_++ << ": ";
 		dump(os, data);
 
@@ -77,9 +71,8 @@ int main(int argc, char* argv[])
 
 		io_service io_service;
 		Servidor servidor(io_service,
-				ip::address::from_string(argv[1]),
-				atoi(argv[2]));
-		server.start();
+				  ip::address::from_string(argv[1]),
+				  atoi(argv[2]));
 		io_service.run();
 	}
 	catch (exception& e)
