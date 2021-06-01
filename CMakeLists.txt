@@ -9,12 +9,12 @@ IF(Boost_FOUND)
   LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 ENDIF(Boost_FOUND)
 
-SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY} baseserver)
+SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBRARY} libprobe)
 
 
 set(CMAKE_CXX_FLAGS "-O0 -g -Wall -std=c++98")
 
-add_subdirectory(baseserver)
+add_subdirectory(libprobe)
 
 
 add_subdirectory(orquestrador)
