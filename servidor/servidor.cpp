@@ -7,25 +7,16 @@
 //
 
 #include <iostream>
-#include <iomanip>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 #include "basemulticastserver.h"
+#include "mensagem.h"
+#include "dump.h"
 
 using namespace std;
 using namespace boost::asio;
-
-void dump(ostringstream& os,
-	  const vector<char>& data){
-	for (vector<char>::const_iterator it = data.begin();
-	     it < data.end();
-	     it++){
-		os << setw(2) << hex << unsigned(*it) << " ";
-	}
-	os << "FIM" << endl;
-}
 
 class Servidor :
 	public BaseMulticastServer
@@ -43,12 +34,11 @@ public:
 			     const vector<char>& data){
 		ostringstream os;
 
-		os << "Message " << message_count_++ << ": ";
-		dump(os, data);
-
+		os << "Message " << message_count_++ << " ";
 		os << "recipient: " << sender << endl;
 		message_ = os.str();
 		cerr << message_;
+		dump(data);
 
 		send_to(socket_, data, sender);
 	}
