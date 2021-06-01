@@ -17,6 +17,16 @@
 using namespace std;
 using namespace boost::asio;
 
+void dump(ostringstream& os,
+	  const vector<char>& data){
+	for (vector<char>::const_iterator it = data.begin();
+	     it < data.end();
+	     it++){
+		os << setw(2) << hex << unsigned(*it) << " ";
+	}
+	os << "FIM" << endl;
+}
+
 class Servidor :
 	public BaseMulticastServer
 {
@@ -40,13 +50,8 @@ public:
 
 		ostringstream os;
 		os << "Message " << message_count_++ << ": ";
+		dump(os, data);
 
-		for (vector<char>::iterator it = data.begin();
-		     it < data.end();
-		     it++){
-			os << setw(2) << hex << unsigned(*it) << " ";
-		}
-		os << "FIM" << endl;
 		os << "recipient: " << sender << endl;
 		message_ = os.str();
 		cerr << message_;
