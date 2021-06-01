@@ -11,8 +11,6 @@
 
 #include "basemulticastserver.h"
 
-const short multicast_port = 9921;
-
 const int max_message_count = 10;
 
 using namespace std;
@@ -23,12 +21,13 @@ using namespace boost::asio;
 // não é copiada.
 
 MulticastReceiver::MulticastReceiver(io_service& io_service,
-		   ip::udp::socket& socket_,
-		   const ip::address& multicast_address,
-		   const ip::address& listen_address)
+				     ip::udp::socket& socket_,
+				     const ip::address& multicast_address,
+				     unsigned short port,
+				     const ip::address& listen_address)
 {
 	// Create the socket so that multiple may be bound to the same address.
-	ip::udp::endpoint listen_endpoint(listen_address, multicast_port);
+	ip::udp::endpoint listen_endpoint(listen_address, port);
 	socket_.open(listen_endpoint.protocol());
 	socket_.set_option(ip::udp::socket::reuse_address(true));
 	socket_.bind(listen_endpoint);
@@ -46,7 +45,7 @@ MulticastReceiver::MulticastReceiver(io_service& io_service,
 						&socket_,
 						placeholders::error,
 						placeholders::bytes_transferred));
-	cerr << "Ouvindo MC em " << multicast_address << ":" << multicast_port<< endl;
+	cerr << "Ouvindo MC em " << multicast_address << ":" << port << endl;
 }
 
 
@@ -74,19 +73,24 @@ void MulticastReceiver::handle_receive_from(ip::udp::socket* socket_,
 
 BaseMulticastServer::BaseMulticastServer(io_service& io_service,
 		       const ip::address& multicast_address,
+		       unsigned short port,
 		       const ip::address& listen_address)
 	: SocketOwner<ip::udp::socket>(io_service)
 	, MulticastReceiver(io_service,
 			    socket_,
 			    multicast_address,
+			    port,
 			    listen_address)
-	, UDPSender(multicast_address)
+	, UDPSender(multicast_address,
+		    port)
 {
 }
 
-UDPSender::UDPSender(const ip::address& multicast_address)
+UDPSender::UDPSender(const ip::address& multicast_address,
+		     unsigned int port)
 	: message_count_(0)
-	, endpoint_(multicast_address, multicast_port)
+	, endpoint_(multicast_address,
+		    port)
 {
 }
 

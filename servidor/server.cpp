@@ -23,10 +23,10 @@ class Server :
 public:
 	Server(io_service &io_service,
 	       const ip::address& multicast_address,
-	       const ip::address& listen_address)
+	       unsigned short port)
 	: BaseMulticastServer(io_service,
 		     multicast_address,
-		     listen_address)
+		     port)
 	{}
 
 	void start(){
@@ -68,16 +68,16 @@ int main(int argc, char* argv[])
 		{
 			cerr << "Usage: receiver <listen_address> <multicast_address>\n";
 			cerr << "  For IPv4, try:\n";
-			cerr << "    receiver 0.0.0.0 239.255.0.1\n";
+			cerr << "    receiver 239.255.0.1 9900\n";
 			cerr << "  For IPv6, try:\n";
-			cerr << "    receiver 0::0 ff31::8000:1234\n";
+			cerr << "    receiver ff31::8000:1234 9900\n";
 			return 1;
 		}
 
 		io_service io_service;
 		Server server(io_service,
 				ip::address::from_string(argv[1]),
-				ip::address::from_string(argv[2]));
+				atoi(argv[2]));
 		server.start();
 		io_service.run();
 	}

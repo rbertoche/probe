@@ -20,6 +20,7 @@ protected:
 	MulticastReceiver(io_service& io_service,
 		 ip::udp::socket& socket_,
 		 const ip::address& multicast_address,
+		 unsigned short port,
 		 const ip::address& listen_address);
 
 	void handle_receive_from(ip::udp::socket* socket_,
@@ -40,7 +41,8 @@ const ip::address default_listen_address(ip::address::from_string("0.0.0.0"));
 class UDPSender
 {
 protected:
-	UDPSender(const ip::address& multicast_address);
+	UDPSender(const ip::address& multicast_address,
+		  unsigned int port);
 
 	void handle_send_to(const boost::system::error_code& error);
 
@@ -57,6 +59,7 @@ class BaseMulticastServer
 public:
 	BaseMulticastServer(io_service &io_service,
 			    const ip::address& multicast_address,
+			    unsigned short port,
 			    const ip::address& listen_address=default_listen_address);
 
 };
