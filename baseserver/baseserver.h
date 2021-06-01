@@ -13,16 +13,7 @@
 
 using namespace boost::asio;
 
-class UDPSocketInterface
-{
-	// Permite acessar o socket fora do construtor
-	// Dentro do construtor virtual nao funciona
-protected:
-	virtual ip::udp::socket& udp_socket() = 0;
-};
-
 class MulticastReceiver
-	: public UDPSocketInterface
 {
 protected:
 	MulticastReceiver(io_service& io_service,
@@ -30,7 +21,8 @@ protected:
 		 const ip::address& multicast_address,
 		 const ip::address& listen_address);
 
-	void handle_receive_from(const boost::system::error_code& error,
+	void handle_receive_from(ip::udp::socket* socket_,
+				 const boost::system::error_code& error,
 				 size_t bytes_recvd);
 
 	virtual void respond(ip::udp::endpoint sender,
@@ -45,32 +37,15 @@ private:
 const ip::address default_listen_address(ip::address::from_string("0.0.0.0"));
 
 class UDPSender
-	: public UDPSocketInterface
 {
-public:
-
-	ip::udp::endpoint getEndpoint()
-	{
-		return endpoint_;
-	}
-
 protected:
-	UDPSender(io_service& io_service,
-		       const ip::address& multicast_address);
-
-	virtual void respond(ip::udp::endpoint origin,
-			     std::vector<char>& data) = 0;
+	UDPSender(const ip::address& multicast_address);
 
 	void handle_send_to(const boost::system::error_code& error);
 
-	void handle_timeout(const boost::system::error_code& error);
-
-	deadline_timer timer_;
 	int message_count_;
 	std::string message_;
 	ip::udp::endpoint endpoint_;
-
-	virtual ip::udp::socket& udp_socket() = 0;
 };
 #endif // BASESERVER_H
 
@@ -86,6 +61,7 @@ protected:
 		: socket__(io_service)
 		, socket_(socket__)
 	{}
+public:
 	Socket& socket_;
 };
 
@@ -98,8 +74,5 @@ public:
 	BaseMulticastServer(io_service &io_service,
 			    const ip::address& multicast_address,
 			    const ip::address& listen_address=default_listen_address);
-
-protected:
-	virtual ip::udp::socket& udp_socket();
 
 };

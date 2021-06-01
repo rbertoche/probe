@@ -38,15 +38,21 @@ MulticastReceiver::MulticastReceiver(io_service& io_service,
 	boost::system::error_code ec;
 	socket_.set_option( option, ec);
 
+	// Bind cria uma closure que armazena o this e o socket e outros argumentos
+	// e retorna um callable de 1 argumento size_t
 	socket_.async_receive_from( buffer(data_, max_length), sender_endpoint_,
-				    boost::bind(&MulticastReceiver::handle_receive_from, this,
+				    boost::bind(&MulticastReceiver::handle_receive_from,
+						this,
+						&socket_,
 						placeholders::error,
 						placeholders::bytes_transferred));
 	cerr << "Ouvindo MC em " << multicast_address << ":" << multicast_port<< endl;
 }
 
 
-void MulticastReceiver::handle_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
+void MulticastReceiver::handle_receive_from(ip::udp::socket* socket_,
+					    const boost::system::error_code& error,
+					    size_t bytes_recvd)
 {
 	if (!error)
 	{
@@ -54,8 +60,10 @@ void MulticastReceiver::handle_receive_from(const boost::system::error_code& err
 		cout << endl;
 
 		vector<char> buf(bytes_recvd);
-		udp_socket().async_receive_from( buffer(&buf[0], buf.size()), sender_endpoint_,
-					    boost::bind(&MulticastReceiver::handle_receive_from, this,
+		socket_->async_receive_from( buffer(&buf[0], buf.size()), sender_endpoint_,
+					    boost::bind(&MulticastReceiver::handle_receive_from,
+							this,
+							socket_,
 							placeholders::error,
 							placeholders::bytes_transferred));
 
@@ -72,44 +80,19 @@ BaseMulticastServer::BaseMulticastServer(io_service& io_service,
 			    socket_,
 			    multicast_address,
 			    listen_address)
-	, UDPSender(io_service,
-		    multicast_address)
-{}
-
-ip::udp::socket& BaseMulticastServer::udp_socket()
+	, UDPSender(multicast_address)
 {
-	return socket_;
 }
 
-
-UDPSender::UDPSender(io_service& io_service, const ip::address& multicast_address)
-	: timer_(io_service)
-	, message_count_(0)
+UDPSender::UDPSender(const ip::address& multicast_address)
+	: message_count_(0)
 	, endpoint_(multicast_address, multicast_port)
 {
 }
 
 void UDPSender::handle_send_to(const boost::system::error_code& error)
 {
-	if (!error && message_count_ < max_message_count)
-	{
-		timer_.expires_from_now(boost::posix_time::seconds(1));
-		timer_.async_wait( boost::bind(&UDPSender::handle_timeout, this,
-					       placeholders::error));
-	}
-}
-
-void UDPSender::handle_timeout(const boost::system::error_code& error)
-{
 	if (!error)
 	{
-		ostringstream os;
-		os << "Message " << message_count_++;
-		message_ = os.str();
-
-
-		udp_socket().async_send_to( buffer(message_), endpoint_,
-					    boost::bind(&UDPSender::handle_send_to, this,
-							placeholders::error));
 	}
 }
