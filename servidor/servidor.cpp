@@ -24,16 +24,15 @@ public:
 	Server(io_service &io_service,
 	       const ip::address& multicast_address,
 	       unsigned short port)
-	: BaseMulticastServer(io_service,
-		     multicast_address,
-		     port)
+		: BaseMulticastServer(io_service,
+				      multicast_address,
+				      port)
 	{}
 
 	void start(){
 		vector<char> dummy(10);
 		respond(endpoint_,
 			dummy);
-
 	}
 
 	virtual void respond(ip::udp::endpoint sender,
