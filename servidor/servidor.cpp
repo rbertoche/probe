@@ -17,11 +17,11 @@
 using namespace std;
 using namespace boost::asio;
 
-class Server :
+class Servidor :
 	public BaseMulticastServer
 {
 public:
-	Server(io_service &io_service,
+	Servidor(io_service &io_service,
 	       const ip::address& multicast_address,
 	       unsigned short port)
 		: BaseMulticastServer(io_service,
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 		}
 
 		io_service io_service;
-		Server server(io_service,
+		Servidor servidor(io_service,
 				ip::address::from_string(argv[1]),
 				atoi(argv[2]));
 		server.start();
