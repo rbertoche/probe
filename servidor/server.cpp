@@ -31,6 +31,13 @@ public:
 		     listen_address)
 	{}
 
+	void start(){
+		vector<char> dummy(10);
+		respond(endpoint_,
+			dummy);
+
+	}
+
 	virtual void respond(ip::udp::endpoint sender,
 			     vector<char>& data){
 
@@ -73,9 +80,7 @@ int main(int argc, char* argv[])
 		Server server(io_service,
 				ip::address::from_string(argv[1]),
 				ip::address::from_string(argv[2]));
-		vector<char> dummy(10);
-		server.respond(server.getEndpoint(),
-			       dummy);
+		server.start();
 		io_service.run();
 	}
 	catch (exception& e)
