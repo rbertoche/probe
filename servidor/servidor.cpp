@@ -55,12 +55,13 @@ public:
 	virtual void respond(ip::udp::endpoint origin,
 			     const vector<unsigned char>& data){
 		ostringstream os;
-
+#ifdef DEBUG_1
 		os << "Message " << message_count_++ << " ";
 		os << "recipient: " << origin << endl;
 		message_ = os.str();
 		cerr << message_;
 		dump(data);
+#endif
 
 		Mensagem m(Mensagem::unpack(data));
 		if (m.origem() != ORQUESTRADOR){
@@ -82,6 +83,7 @@ public:
 		switch (m.tipo()){
 		case DISPARA:
 		{
+			// ack
 			Mensagem m(DISPARA, origem_local, 0, 0);
 			send_to(socket_, Mensagem::pack(m), origin);
 			// Executa teste
@@ -101,6 +103,7 @@ public:
 			socket_.get_io_service().stop();
 			break;
 		default:
+			cerr << "tipo inválido" << endl;
 			cerr << "Deveria ser inalcançável 🐛" << endl;
 			break;
 		}
@@ -119,10 +122,10 @@ public:
 		ostrstream conteudo_ostream(reinterpret_cast<char*>(conteudo.data()),
 								   conteudo.size());
 
-		ip::tcp::iostream stream(endpoint);
+		ip::tcp::iostream tcp_stream(endpoint);
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
-			header_ostream << stream;
+			header_ostream << tcp_stream;
 			Mensagem m_test(Mensagem::unpack(header));
 			if (m.tamanho() != m_test.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
@@ -130,8 +133,7 @@ public:
 				cerr.flush();
 				abort();
 			}
-			conteudo_ostream << stream;
-
+			tcp_stream >> conteudo_ostream;
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida: ";
 			dump(conteudo);
@@ -141,8 +143,8 @@ public:
 			{
 			Mensagem m_resposta(ECO, origem_local, m.tamanho(), m.repeticoes());
 			header = Mensagem::pack(m_resposta);
-			stream << header_istream;
-			stream << conteudo_istream;
+			tcp_stream << header_istream;
+			tcp_stream << conteudo_istream;
 			}
 		}
 	}

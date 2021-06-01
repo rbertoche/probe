@@ -7,7 +7,7 @@
 //
 
 #include <iostream>
-#include <iomanip>
+#include <strstream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -32,7 +32,8 @@ public:
 				      multicast_address,
 				      multicast_port)
 		, endpoint(server_address, server_port)
-	{}
+	{
+	}
 
 	ip::tcp::endpoint endpoint;
 	ip::tcp::acceptor acceptor;
@@ -69,6 +70,7 @@ public:
 		switch (m.tipo()){
 		case DISPARA:
 		{
+			// ack
 			Mensagem m(DISPARA, origem_local, 0, 0);
 			send_to(socket_, Mensagem::pack(m), origin);
 			// Executa teste
@@ -105,25 +107,25 @@ public:
 		ostrstream conteudo_ostream(reinterpret_cast<char*>(conteudo.data()),
 								   conteudo.size());
 
-		ip::tcp::iostream stream(endpoint);
+		ip::tcp::iostream tcp_stream(endpoint);
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
 			{
 			Mensagem m_test(ECO, origem_local, m.tamanho(), m.repeticoes());
-			header = Mensagem::pack(m_resposta);
+			header = Mensagem::pack(m_test);
 			// Timing!
-			stream << header_istream;
-			stream << conteudo_istream;
+			tcp_stream << header_istream;
+			tcp_stream << conteudo_istream;
 			}
-			header_ostream << stream;
-			Mensagem m_test(Mensagem::unpack(header));
-			if (m.tamanho() != m_test.tamanho()){
+			header_ostream << tcp_stream;
+			Mensagem m_resposta(Mensagem::unpack(header));
+			if (m.tamanho() != m_resposta.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
 				cerr << "Abortando!" << endl;
 				cerr.flush();
 				abort();
 			}
-			conteudo_ostream << stream;
+			tcp_stream >> conteudo_ostream;
 			// Timing!
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida: ";
@@ -142,11 +144,12 @@ int main(int argc, char* argv[])
 	{
 		if (argc != 5)
 		{
-			cerr << "Usage: receiver <listen_address> <multicast_address>\n";
+			cerr << "Usage: cliente <multicast_address> <multicast_port>\n";
+			cerr << "               <server_address> <server_port>\n";
 			cerr << "  For IPv4, try:\n";
-			cerr << "    receiver 239.255.0.1 9900\n";
+			cerr << "    cliente 239.255.0.1 9900 127.0.0.1 8800\n";
 			cerr << "  For IPv6, try:\n";
-			cerr << "    receiver ff31::8000:1234 9900\n";
+			cerr << "    cliente ff31::8000:1234 9900 127.0.0.1 8800\n";
 			return 1;
 		}
 
