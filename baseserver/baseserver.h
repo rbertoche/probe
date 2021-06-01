@@ -47,7 +47,6 @@ protected:
 	std::string message_;
 	ip::udp::endpoint endpoint_;
 };
-#endif // BASESERVER_H
 
 template <typename Socket>
 class SocketOwner // cada objeto deve possuir no máximo 1 recurso?
@@ -76,3 +75,5 @@ public:
 			    const ip::address& listen_address=default_listen_address);
 
 };
+
+#endif // BASESERVER_H
