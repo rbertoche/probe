@@ -100,3 +100,14 @@ void UDPSender::handle_send_to(const boost::system::error_code& error)
 	{
 	}
 }
+
+void UDPSender::send_to(ip::udp::socket& socket_,
+			const std::vector<char>& data,
+			ip::udp::endpoint destination)
+{
+	socket_.async_send_to(buffer(data),
+			      destination,
+			      boost::bind(&UDPSender::handle_send_to,
+					  static_cast<BaseMulticastServer*>(this),
+					  placeholders::error));
+}

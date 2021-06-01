@@ -52,10 +52,7 @@ public:
 		message_ = os.str();
 		cerr << message_;
 
-		socket_.async_send_to(buffer(data), sender,
-				      boost::bind(&Server::handle_send_to,
-						  static_cast<BaseMulticastServer*>(this),
-						  placeholders::error));
+		send_to(socket_, data, sender);
 	}
 };
 

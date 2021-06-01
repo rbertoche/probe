@@ -46,6 +46,10 @@ protected:
 
 	void handle_send_to(const boost::system::error_code& error);
 
+	void send_to(ip::udp::socket& socket_,
+		     const std::vector<char>& data,
+		     ip::udp::endpoint destination);
+
 	int message_count_;
 	std::string message_;
 	ip::udp::endpoint endpoint_;
