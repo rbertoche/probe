@@ -28,7 +28,7 @@ protected:
 				 size_t bytes_recvd);
 
 	virtual void respond(ip::udp::endpoint sender,
-			     std::vector<char>& data) = 0;
+			     const std::vector<char>& data) = 0;
 
 private:
 	ip::udp::endpoint sender_endpoint_;

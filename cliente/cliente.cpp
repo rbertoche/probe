@@ -37,12 +37,12 @@ public:
 	}
 
 	virtual void respond(ip::udp::endpoint sender,
-			     vector<char>& data){
+			     const vector<char>& data){
 
 		ostringstream os;
 		os << "Message " << message_count_++ << ": ";
 
-		for (vector<char>::iterator it = data.begin();
+		for (vector<char>::const_iterator it = data.begin();
 		     it < data.end();
 		     it++){
 			os << setw(2) << hex << unsigned(*it) << " ";
