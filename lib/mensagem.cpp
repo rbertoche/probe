@@ -30,14 +30,14 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 		cerr.flush();
 		abort();
 	}
-#ifdef DEBUG_1
+#ifndef DEBUG_1
 	cerr << "desempacotando mensagem: ";
 	dump(data);
 #endif
 	unsigned repeticoes;
 	if (data[0] != EXITO) {
 		// 1024 repetições;
-		repeticoes = 1 << (data[3] >> 10 ? 10 : data[3]);
+		repeticoes = 1 << (data[3] >> 16 ? 16 : data[3]);
 	} else {
 		repeticoes = data[3];
 	}
@@ -45,7 +45,7 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 			(Origem)data[1],
 			// Impede numeros muito grandes
 			// 65536 bytes
-			1 << (data[2] >> 16 ? 16 : data[2]),
+			1 << (data[2] >> 20 ? 20 : data[2]),
 			repeticoes);
 }
 
@@ -54,9 +54,9 @@ vector<unsigned char> Mensagem::pack(const Mensagem& msg)
 	vector<unsigned char> data(4);
 	data[0] = msg.tipo_;
 	data[1] = msg.origem_;
-	data[2] = log2(msg.tamanho_);
+	data[2] = round(log2(msg.tamanho_));
 	if (msg.tipo_ != EXITO){
-		data[3] = log2(msg.repeticoes_);
+		data[3] = round(log2(msg.repeticoes_));
 	} else {
 		data[3] = msg.repeticoes_;
 	}
