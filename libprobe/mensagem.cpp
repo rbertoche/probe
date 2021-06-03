@@ -30,13 +30,17 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 		cerr.flush();
 		abort();
 	}
-	Mensagem m((Tipo)data[0],
-		   (Origem)data[1],
-		   // Impede numeros muito grandes
-		   // 65536 bytes
-		   1 << (data[2] > 16 ? 16 : data[2]),
-		   // 1024 repetições
-		   1 << (data[3] > 10 ? 10 : data[3]));
+#ifdef DEBUG_1
+	cerr << "desempacotando mensagem: ";
+	dump(data);
+#endif
+	return Mensagem((Tipo)data[0],
+			(Origem)data[1],
+			// Impede numeros muito grandes
+			// 65536 bytes
+			1 << (data[2] >> 16 ? 16 : data[2]),
+			// 1024 repetições
+			1 << (data[3] >> 10 ? 10 : data[3]));
 }
 
 vector<unsigned char> Mensagem::pack(const Mensagem& msg)

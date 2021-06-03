@@ -20,33 +20,42 @@ using namespace std;
 using namespace boost::asio;
 using boost::asio::ip::tcp;
 
+//#define DEBUG_1
+
 class Servidor :
 	public BaseMulticastServer
 {
 public:
-	Servidor(boost::asio::io_service& io_service,
+	Servidor(boost::asio::io_service& io_service_,
 		 const ip::address& multicast_address,
 		 unsigned int multicast_port,
 		 const ip::address& server_address,
 		 unsigned int server_port)
-		: BaseMulticastServer(io_service,
+		: BaseMulticastServer(io_service_,
 				      multicast_address,
 				      multicast_port)
+		, io_service(io_service_)
 		, endpoint(server_address, server_port)
 		, acceptor(io_service, endpoint)
-	{}
+	{
+		cerr << "Ouvindo em " << endpoint << endl;
+	}
 
-	Servidor(boost::asio::io_service& io_service,
+	Servidor(boost::asio::io_service& io_service_,
 		 const ip::address& multicast_address,
 		 unsigned int multicast_port,
 		 unsigned int server_port)
-		: BaseMulticastServer(io_service,
+		: BaseMulticastServer(io_service_,
 				      multicast_address,
 				      multicast_port)
+		, io_service(io_service)
 		, endpoint(ip::tcp::v4(), server_port)
 		, acceptor(io_service, endpoint)
-	{}
+	{
+		cerr << "Ouvindo em " << endpoint << endl;
+	}
 
+	boost::asio::io_service& io_service;
 	ip::tcp::endpoint endpoint;
 	ip::tcp::acceptor acceptor;
 
@@ -54,6 +63,7 @@ public:
 
 	virtual void respond(ip::udp::endpoint origin,
 			     const vector<unsigned char>& data){
+		// TODO: Resposta está indo via unicast... ops!
 		ostringstream os;
 #ifdef DEBUG_1
 		os << "Message " << message_count_++ << " ";
@@ -67,14 +77,15 @@ public:
 		if (m.origem() != ORQUESTRADOR){
 			// Ignora
 		} else if (m.tipo() == ECO){
-			cerr << "mensagem de eco recebido pelo multicast: ";
+			cerr << "Erro, mensagem de eco recebido pelo multicast: ";
 			cerr << m.tipo() << " ";
 			cerr << m.origem() << " ";
 			cerr << m.tamanho() << " ";
 			cerr << m.repeticoes() << endl;
 			dump(data);
+			abort();
 		} else {
-			trata_mensagem(m, origin);
+			trata_mensagem(m, mc_endpoint);
 		}
 	}
 
@@ -84,14 +95,13 @@ public:
 		case DISPARA:
 		{
 			// ack
-			Mensagem m(DISPARA, origem_local, 0, 0);
-			send_to(socket_, Mensagem::pack(m), origin);
+			Mensagem ack(DISPARA, origem_local, m.tamanho(), m.repeticoes());
+			send_to(socket_, Mensagem::pack(ack), origin);
 			// Executa teste
 			run_test(m);
-			{ // Notifica fim do teste
-			Mensagem m(EXITO, origem_local, 0, 0);
-			send_to(socket_, Mensagem::pack(m), origin);
-			}
+			// Notifica fim do teste
+			Mensagem exito(EXITO, origem_local, m.tamanho(), m.repeticoes());
+			send_to(socket_, Mensagem::pack(exito), origin);
 			break;
 		}
 		case EXITO:
@@ -99,9 +109,14 @@ public:
 			// TODO: Marcar um bit e dar erro caso nao seja marcado?
 			break;
 		case DESLIGA:
+		{
+			cerr << "what" << endl;
+			Mensagem ack(DESLIGA, origem_local, m.tamanho(), m.repeticoes());
+			send_to(socket_, Mensagem::pack(ack), origin);
 			cerr << "mensagem de shutdown recebida. Tchau!" << endl;
 			socket_.get_io_service().stop();
 			break;
+		}
 		default:
 			cerr << "tipo inválido" << endl;
 			cerr << "Deveria ser inalcançável 🐛" << endl;
@@ -110,22 +125,30 @@ public:
 	}
 
 	void run_test(const Mensagem& m){
+		if (m.tamanho() < 4){
+			cerr << "Erro, disparo de teste com tamanho inválido "
+			      << m.tamanho() << endl;
+//			cerr << "Erro tentando desempacotar mensagem "
+//				"de tamanho inválido "
+//			      << m.tamanho() << endl;
+			return;
+		}
+
 		vector<unsigned char> header(4);
-		istrstream header_istream(reinterpret_cast<char*>(header.data()),
-								 header.size());
-		ostrstream header_ostream(reinterpret_cast<char*>(header.data()),
-								 header.size());
-
 		vector<unsigned char> conteudo(m.tamanho() - 4);
-		istrstream conteudo_istream(reinterpret_cast<char*>(conteudo.data()),
-								   conteudo.size());
-		ostrstream conteudo_ostream(reinterpret_cast<char*>(conteudo.data()),
-								   conteudo.size());
 
-		ip::tcp::iostream tcp_stream(endpoint);
+		ip::tcp::socket tcp_socket(io_service);
+		acceptor.accept(tcp_socket);
+
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
-			header_ostream << tcp_stream;
+			tcp_socket.receive(buffer(header));
+#ifdef DEBUG
+			cerr << "mensagem de teste recebida: ";
+			dump(header);
+#else
+			cerr << "mensagem de teste recebida" << endl;
+#endif
 			Mensagem m_test(Mensagem::unpack(header));
 			if (m.tamanho() != m_test.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
@@ -133,18 +156,30 @@ public:
 				cerr.flush();
 				abort();
 			}
-			tcp_stream >> conteudo_ostream;
+			if (m.tamanho() - header.size() > 0){
+				tcp_socket.receive(buffer(conteudo));
+				dump(conteudo);
+			}
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida: ";
 			dump(conteudo);
 #else
 			cerr << "mensagem de teste recebida" << endl;
 #endif
-			{
 			Mensagem m_resposta(ECO, origem_local, m.tamanho(), m.repeticoes());
 			header = Mensagem::pack(m_resposta);
-			tcp_stream << header_istream;
-			tcp_stream << conteudo_istream;
+#ifdef DEBUG
+			cerr << "enviando resposta a mensagem de teste via tcp: ";
+			dump(header);
+#else
+			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
+#endif
+			tcp_socket.send(buffer(header));
+			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
+#ifdef DEBUG
+					dump(conteudo);
+#endif
+				tcp_socket.send(buffer(conteudo));
 			}
 		}
 	}
@@ -153,46 +188,38 @@ public:
 
 int main(int argc, char* argv[])
 {
-	try
-	{
-		io_service io_service;
-		tcp::endpoint endpoint(tcp::v4(), 13);
-		tcp::acceptor acceptor(io_service, endpoint);
+	io_service io_service;
+//		tcp::endpoint endpoint(tcp::v4(), 13);
+//		tcp::acceptor acceptor(io_service, endpoint);
 
-		if  (argc == 4) {
-			Servidor servidor(io_service,
-					  ip::address::from_string(argv[1]),
-					  atoi(argv[2]),
-					  atoi(argv[3]));
-			io_service.run();
-		} else if (argc = 5) {
-			Servidor servidor(io_service,
-					  ip::address::from_string(argv[1]),
-					  atoi(argv[2]),
-					  ip::address::from_string(argv[3]),
-					  atoi(argv[4]));
-			io_service.run();
-		} else {
-			cerr << "Usage: servidor <multicast_address> <multicast_port>\n";
-			cerr << "                <server_address> <server_port>\n";
-			cerr << "       or\n";
-			cerr << "       servidor <multicast_address> <multicast_port>\n";
-			cerr << "                <server_port>\n";
-			cerr << "  For IPv4, try:\n";
-			cerr << "    servidor 239.255.0.1 9900 127.0.0.1 8800\n";
-			cerr << "    or\n";
-			cerr << "    servidor 239.255.0.1 9900 8800\n";
-			cerr << "  For IPv6, try:\n";
-			cerr << "    servidor ff31::8000:1234 9900 127.0.0.1 8800\n";
-			cerr << "    or";
-			cerr << "    servidor ff31::8000:1234 9900 8800\n";
-			return 1;
-		}
-
-	}
-	catch (exception& e)
-	{
-		cerr << "Exception: " << e.what() << "\n";
+	if  (argc == 4) {
+		Servidor servidor(io_service,
+				  ip::address::from_string(argv[1]),
+				  atoi(argv[2]),
+				  atoi(argv[3]));
+		io_service.run();
+	} else if (argc == 5) {
+		Servidor servidor(io_service,
+				  ip::address::from_string(argv[1]),
+				  atoi(argv[2]),
+				  ip::address::from_string(argv[3]),
+				  atoi(argv[4]));
+		io_service.run();
+	} else {
+		cerr << "Usage: servidor <multicast_address> <multicast_port>\n";
+		cerr << "                <server_address> <server_port>\n";
+		cerr << "       or\n";
+		cerr << "       servidor <multicast_address> <multicast_port>\n";
+		cerr << "                <server_port>\n";
+		cerr << "  For IPv4, try:\n";
+		cerr << "    servidor 239.255.0.1 9900 127.0.0.1 8800\n";
+		cerr << "    or\n";
+		cerr << "    servidor 239.255.0.1 9900 8800\n";
+		cerr << "  For IPv6, try:\n";
+		cerr << "    servidor ff31::8000:1234 9900 127.0.0.1 8800\n";
+		cerr << "    or";
+		cerr << "    servidor ff31::8000:1234 9900 8800\n";
+		return 1;
 	}
 
 	return 0;

@@ -11,7 +11,13 @@
 
 #include "basemulticastserver.h"
 
+#include "dump.h"
+
+#define DEBUG
+
 const int max_message_count = 10;
+
+enum { max_length = 4 };
 
 using namespace std;
 using namespace boost::asio;
@@ -25,6 +31,8 @@ MulticastReceiver::MulticastReceiver(io_service& io_service,
 				     const ip::address& multicast_address,
 				     unsigned short port,
 				     const ip::address& listen_address)
+	: mc_endpoint(multicast_address, port)
+	, data_(max_length)
 {
 	// Create the socket so that multiple may be bound to the same address.
 	ip::udp::endpoint listen_endpoint(listen_address, port);
@@ -39,7 +47,7 @@ MulticastReceiver::MulticastReceiver(io_service& io_service,
 
 	// Bind cria uma closure que armazena o this e o socket e outros argumentos
 	// e retorna um callable de 1 argumento size_t
-	socket_.async_receive_from( buffer(data_, max_length), sender_endpoint_,
+	socket_.async_receive_from( buffer(data_), sender_endpoint_,
 				    boost::bind(&MulticastReceiver::handle_receive_from,
 						this,
 						&socket_,
@@ -53,21 +61,25 @@ void MulticastReceiver::handle_receive_from(ip::udp::socket* socket_,
 					    const boost::system::error_code& error,
 					    size_t bytes_recvd)
 {
-	if (!error)
-	{
-		cout.write((char *) data_, bytes_recvd);
-		cout << endl;
+	if (!error) {
+//		cout.write((char *) data_, bytes_recvd);
 
-		vector<unsigned char> buf(bytes_recvd);
-		socket_->async_receive_from( buffer(&buf[0], buf.size()),
-					     sender_endpoint_,
-					     boost::bind(&MulticastReceiver::handle_receive_from,
-							 this,
-							 socket_,
-							 placeholders::error,
-							 placeholders::bytes_transferred));
+//		vector<unsigned char> buf(reinterpret_cast<unsigned char*>(data_.data()),
+//					  bytes_recvd);
 
-		respond(sender_endpoint_, buf);
+		respond(sender_endpoint_, data_);
+
+		socket_->async_receive_from( buffer(data_), sender_endpoint_,
+					    boost::bind(&MulticastReceiver::handle_receive_from,
+							this,
+							socket_,
+							placeholders::error,
+							placeholders::bytes_transferred));
+	} else {
+		cerr << "send_to levantou um erro:" << endl;
+		cerr << error.category().name() << endl;
+		cerr << error.message() << endl;
+		cerr << error.value() << endl;
 	}
 }
 
@@ -97,8 +109,12 @@ UDPSender::UDPSender(const ip::address& multicast_address,
 
 void UDPSender::handle_send_to(const boost::system::error_code& error)
 {
-	if (!error)
-	{
+	if (!error) {
+	} else {
+		cerr << "send_to levantou um erro:" << endl;
+		cerr << error.category().name() << endl;
+		cerr << error.message() << endl;
+		cerr << error.value() << endl;
 	}
 }
 
@@ -106,7 +122,11 @@ void UDPSender::send_to(ip::udp::socket& socket_,
 			const std::vector<unsigned char>& data,
 			ip::udp::endpoint destination)
 {
-	socket_.async_send_to(buffer(data),
+#ifdef DEBUG
+	cerr << "send:\t\t\t";
+	dump(data);
+#endif
+	socket_.async_send_to(buffer(data.data(), data.size()),
 			      destination,
 			      boost::bind(&UDPSender::handle_send_to,
 					  static_cast<BaseMulticastServer*>(this),

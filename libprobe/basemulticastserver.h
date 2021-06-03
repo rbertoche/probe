@@ -30,10 +30,11 @@ protected:
 	virtual void respond(ip::udp::endpoint sender,
 			     const std::vector<unsigned char>& data) = 0;
 
+protected:
+	ip::udp::endpoint mc_endpoint;
 private:
 	ip::udp::endpoint sender_endpoint_;
-	enum { max_length = 1024 };
-	char data_[max_length];
+	std::vector<unsigned char> data_;
 };
 
 const ip::address default_listen_address(ip::address::from_string("0.0.0.0"));
