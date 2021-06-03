@@ -75,7 +75,8 @@ public:
 		vector<unsigned char> data = Mensagem::pack(m);
 		teste_acontecendo = true;
 
-		cerr << "Disparando teste:";
+		Mensagem m2 = Mensagem::unpack(Mensagem::pack(m));
+		cerr << "Disparando teste: " << m2.tamanho() << " " << m2.repeticoes();
 		dump(data);
 
 		send_to(socket_, Mensagem::pack(m), mc_endpoint);
