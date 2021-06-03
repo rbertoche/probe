@@ -66,6 +66,18 @@ public:
 
 	io_service& io_service_;
 
+	~Orquestrador(){
+		boost::lock_guard<boost::mutex> guard(*mutex);
+		if (teste_acontecendo){
+			teste_acontecendo = false;
+			cond->notify_one();
+		}
+	}
+
+	void close(){
+		io_service_.stop();
+	}
+
 	void dispara(uint16_t tamanho, uint16_t repeticoes){
 		exito_servidor = false;
 		exito_cliente = false;
@@ -209,7 +221,7 @@ public:
 				desliga_servidor = true;
 				if (desliga_servidor && desliga_cliente){
 					cerr << "todo mundo ja foi embora. Tchau!" << endl;
-					socket_.get_io_service().stop();
+					close();
 				}
 				break;
 			case CLIENTE:
@@ -218,7 +230,7 @@ public:
 				desliga_cliente = true;
 				if (desliga_servidor && desliga_cliente){
 					cerr << "todo mundo ja foi embora. Tchau!" << endl;
-					socket_.get_io_service().stop();
+					close();
 				}
 				break;
 			default:
@@ -278,10 +290,7 @@ void int_handler_ask(int s){
 	if (yes_no(buf.data()) == 0){
 		signal(SIGINT, SIG_DFL);
 		*_int_parser_state = STATE_STOP;
-		boost::lock_guard<boost::mutex> guard(*_int_orquestrador->mutex);
-		_int_orquestrador->teste_acontecendo = false;
-		_int_orquestrador->cond->notify_one();
-		_int_orquestrador->io_service_.stop();
+		_int_orquestrador->close();
 		_int_happened = true;
 	}
 }
@@ -360,7 +369,7 @@ void cli_handler(Orquestrador* orquestrador,
 	if (ret && ret != RET_QUIT){
 		cerr << "cli_parser saiu com erro" << endl;
 	}
-	orquestrador->io_service_.stop();
+	orquestrador->close();
 }
 
 class ThreadJoiner
@@ -374,7 +383,7 @@ public:
 		// Espera pela thread apenas caso não tenha
 		// ocorrido uma interrupção
 		if (thread_.joinable() && !_int_happened){
-			thread_.join();
+//			thread_.join();
 		}
 	}
 
@@ -412,13 +421,7 @@ int main(int argc, char* argv[])
 				 &orquestrador,
 				 &mutex,
 				 &cond);
-	ThreadJoiner tj(cli_worker);
-
-	io_service.run();
-
-	if(_int_happened){
-		kill(0, SIGINT);
-	}
+	cerr << io_service.run() << endl;
 
 	return 0;
 }
