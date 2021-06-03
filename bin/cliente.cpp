@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include <strstream>
+#include <iomanip>
+#include <fstream>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -15,6 +17,7 @@
 #include "basemulticastserver.h"
 #include "mensagem.h"
 #include "dump.h"
+#include "rtclock.h"
 
 using namespace std;
 using namespace boost::asio;
@@ -37,12 +40,15 @@ public:
 		, io_service(io_service)
 		, endpoint(server_address, server_port)
 	{
+		rtt_file.open("rtt_file", ios::out | ios::app);
 	}
 
 	boost::asio::io_service& io_service;
 	ip::tcp::endpoint endpoint;
 
 	static const Origem origem_local = CLIENTE;
+	ofstream rtt_file;
+
 
 	virtual void respond(ip::udp::endpoint /*origin*/,
 			     const vector<unsigned char>& data){
@@ -53,7 +59,7 @@ public:
 		message_ = os.str();
 		cerr << message_;
 		dump(data);
-#endif
+#endif // DEBUG_1
 
 		Mensagem m(Mensagem::unpack(data));
 		if (m.origem() != ORQUESTRADOR){
@@ -71,6 +77,8 @@ public:
 		}
 	}
 
+	double time_0;
+
 	void trata_mensagem(const Mensagem& m,
 			    ip::udp::endpoint origin) {
 		switch (m.tipo()){
@@ -80,8 +88,16 @@ public:
 			Mensagem ack(DISPARA, origem_local, m.tamanho(), m.repeticoes());
 			send_to(socket_, Mensagem::pack(ack), origin);
 			// Executa teste
+			time_0 = rt_clock();
 			int ret = run_test(m);
+			double rtt = rt_clock() - time_0;
 			// Notifica fim do teste
+			rtt_file << setw(2) << setprecision(5);
+			rtt_file << long(time_0) << "\t"
+				 << m.tamanho() << "\t"
+				 << m.repeticoes() << "\t"
+				 << rtt << endl;
+			rtt_file.flush();
 			Mensagem exito(EXITO, origem_local, m.tamanho(), ret);
 			send_to(socket_, Mensagem::pack(exito), origin);
 			break;
@@ -115,6 +131,7 @@ public:
 
 		ip::tcp::socket tcp_socket(io_service);
 		try {
+//			cout << 1 << " " << rt_clock() - time_0 << endl;
 			tcp_socket.connect(endpoint);
 		} catch (boost::system::system_error const& err){
 			cerr << "Error on connect: ";
@@ -131,30 +148,36 @@ public:
 #ifdef DEBUG_1
 			cerr << "enviando mensagem de teste via tcp:\t";
 			dump(header);
-#else
+#else // DEBUG_1
 #ifdef DEBUG
 			cerr << "enviando mensagem de teste via tcp" << endl;
-#endif
-#endif
+#endif // DEBUG
+#endif // DEBUG_1
 			try {
+//				cout << 2 << " " << rt_clock() - time_0 << endl;
 				tcp_socket.send(buffer(header));
+//				cout << 3 << " " << rt_clock() - time_0 << endl;
 			} catch (boost::system::system_error const& err){
 				cerr << "Error on receive: ";
 				cerr << err.what() << endl;
 				return -2;
 			}
 			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
+//				cout << 4 << " " << rt_clock() - time_0 << endl;
 				tcp_socket.send(buffer(conteudo));
+//				cout << 5 << " " << rt_clock() - time_0 << endl;
 #ifdef DEBUG_1
 				dump(conteudo);
-#endif
+#endif // DEBUG_1
 			}
 #ifdef DEBUG
 			cerr << "leitura bloqueante..." << endl;
-#endif
+#endif // DEBUG
 			size_t read_bytes;
 			try {
+//				cout << 6 << " " << rt_clock() - time_0 << endl;
 				read_bytes = tcp_socket.receive(buffer(header));
+//				cout << 7 << " " << rt_clock() - time_0 << endl;
 			} catch (boost::system::system_error const& err){
 				cerr << "Error on receive: ";
 				cerr << err.what() << endl;
@@ -167,11 +190,11 @@ public:
 #ifdef DEBUG_1
 			cerr << "mensagem recebida via tcp: ";
 			dump(header);
-#else
+#else // DEBUG_1
 #ifdef DEBUG
 			cerr << "mensagem recebida via tcp" << endl;
-#endif
-#endif
+#endif // DEBUG
+#endif // DEBUG_1
 			Mensagem m_resposta(Mensagem::unpack(header));
 			if (m.tamanho() != m_resposta.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
@@ -185,9 +208,12 @@ public:
 			} else {
 				if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
 					size_t read_bytes = 0;
+
+//					cout << 8 << " " << rt_clock() - time_0 << endl;
 					while (read_bytes < m.tamanho() - header.size()){
 						read_bytes += tcp_socket.receive(buffer(conteudo));
 					}
+//					cout << 9 << " " << rt_clock() - time_0 << endl;
 					if (read_bytes != (m.tamanho() - header.size())){
 						cerr << "Erro, fim prematuro da mensagem.";
 						cerr.flush();
@@ -195,15 +221,16 @@ public:
 					} else {
 #ifdef DEBUG
 						cerr << "eco ok." << endl;
-#endif
+#endif // DEBUG
 					}
 #ifdef DEBUG_1
 					dump(conteudo);
-#endif
+#endif // DEBUG_1
 				}
 				// Timing!
 			}
 		}
+//		cout << 10 << " " << rt_clock() - time_0 << endl;
 		cerr << "Teste completado com sucesso." << endl;
 		return 0;
 	}
