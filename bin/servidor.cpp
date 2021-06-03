@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <strstream>
+#include <algorithm>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -135,8 +136,7 @@ public:
 			return -1;
 		}
 
-		vector<unsigned char> header(4);
-		vector<unsigned char> conteudo(m.tamanho() - 4);
+		vector<unsigned char> buffer_(m.tamanho());
 
 		ip::tcp::socket tcp_socket(io_service);
 		acceptor.accept(tcp_socket);
@@ -144,83 +144,56 @@ public:
 
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
-			size_t read_bytes;
+			size_t read_bytes = 0;
 			try {
-				 read_bytes = tcp_socket.receive(buffer(header));
+				while (read_bytes < m.tamanho()){
+					read_bytes += tcp_socket.receive(buffer(buffer_.data() +
+										read_bytes,
+										buffer_.size() -
+										read_bytes));
+				}
 			} catch (boost::system::system_error& e){
-				cerr << "Erro em receive: ";
 				cerr << e.what() << endl;
-				return -2;
-			}
-			if (read_bytes != 4){
-				cerr << "Não foi possível ler a mensagem.";
-				abort();
+				cerr << e.code() << endl;
+				cerr << e.code().message() << endl;
+				return -4;
 			}
 #ifdef DEBUG_1
 			cerr << "mensagem de teste recebida: ";
-			dump(header);
+			dump(buffer_);
 #else // DEBUG_1
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			Mensagem m_test(Mensagem::unpack(header));
+
+			Mensagem m_test(Mensagem::unpack(buffer_));
 #ifndef NO_TESTS
 			if (m.tamanho() != m_test.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
+				cerr << m.tamanho() << " " << m_test.tamanho() <<  " "
+				     << read_bytes << endl;
 				cerr.flush();
 				return -3;
 			}
-#endif // NO_TESTS
-			if (m.tamanho() - header.size() > 0){
-				size_t read_bytes = 0;
-				try {
-					while (read_bytes < m.tamanho() - header.size()){
-						read_bytes += tcp_socket.receive(buffer(conteudo));
-					}
-				} catch (boost::system::system_error& e){
-					cerr << e.what() << endl;
-					cerr << e.code() << endl;
-					cerr << e.code().message() << endl;
-					return -4;
-				}
-#ifdef NO_TESTS
-				if (read_bytes != (m.tamanho() - header.size())){
-					cerr << "Erro, fim prematuro da mensagem: ";
-					cerr << read_bytes << endl;
-					cerr.flush();
-					return -5;
-				}
-#endif // NO_TESTS
-#ifdef DEBUG
-				dump(conteudo);
-#endif // DEBUG
+			if (read_bytes != m.tamanho()){
+				cerr << "Erro, fim prematuro da mensagem: ";
+				cerr << read_bytes << endl;
+				cerr.flush();
+				return -5;
 			}
-#ifdef DEBUG_1
-			cerr << "mensagem de teste recebida: ";
-			dump(conteudo);
-#else // DEBUG_1
-#ifdef DEBUG
-			cerr << "mensagem de teste recebida" << endl;
-#endif // DEBUG
-#endif // DEBUG_1
+#endif // NO_TESTS
 			Mensagem m_resposta(ECO, origem_local, m.tamanho(), m.repeticoes());
-			header = Mensagem::pack(m_resposta);
+			Mensagem::pack(buffer_, m_resposta);
 #ifdef DEBUG_1
 			cerr << "enviando resposta a mensagem de teste via tcp: ";
-			dump(header);
+			dump(buffer_);
 #else // DEBUG_1
 #ifdef DEBUG
 			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			tcp_socket.send(buffer(header));
-			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
-#ifdef DEBUG
-					dump(conteudo);
-#endif // DEBUG
-				tcp_socket.send(buffer(conteudo));
-			}
+			tcp_socket.send(buffer(buffer_));
 		}
 		cerr << "Teste completado" << endl;
 		return 0;
