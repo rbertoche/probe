@@ -111,7 +111,9 @@ public:
 		case DESLIGA:
 		{
 			Mensagem ack(DESLIGA, origem_local, m.tamanho(), m.repeticoes());
-			send_to(socket_, Mensagem::pack(ack), origin);
+			vector<unsigned char> v = Mensagem::pack(ack);
+			*reinterpret_cast<unsigned short*>(&v[2]) = 0x3713;
+			send_to(socket_, v, origin);
 			cerr << "mensagem de shutdown recebida. Tchau!" << endl;
 			socket_.get_io_service().stop();
 			break;
