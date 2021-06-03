@@ -33,6 +33,8 @@ public:
 
 	static Mensagem unpack(const vector<unsigned char>& data);
 
+	static void pack(vector<unsigned char>& dest, const Mensagem& msg);
+
 	static vector<unsigned char> pack(const Mensagem& msg);
 
 	Tipo tipo() const{

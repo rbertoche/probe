@@ -21,7 +21,7 @@ Mensagem::Mensagem(Tipo tipo,
 
 Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 {
-	if (data.size() != 4){
+	if (data.size() < 4){
 		cerr << "Erro tentando desempacotar mensagem "
 			"de tamanho inválido "
 		     << data.size() << endl;
@@ -32,12 +32,14 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 	}
 #ifndef DEBUG_1
 	cerr << "desempacotando mensagem: ";
-	dump(data);
+	vector<unsigned char> v(4);
+	copy(data.begin(), data.begin()+4, v.begin());
+	dump(v);
 #endif
 	unsigned repeticoes;
 	if (data[0] != EXITO) {
 		// 1024 repetições;
-		repeticoes = 1 << (data[3] >> 16 ? 16 : data[3]);
+//		repeticoes = 1 << (data[3] > 31 ? 31 : data[3]);
 	} else {
 		repeticoes = data[3];
 	}
@@ -45,20 +47,24 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 			(Origem)data[1],
 			// Impede numeros muito grandes
 			// 65536 bytes
-			1 << (data[2] >> 20 ? 20 : data[2]),
+			1 << (data[2] > 20 ? 20 : data[2]),
 			repeticoes);
 }
 
+void Mensagem::pack(vector<unsigned char>& dest, const Mensagem& msg)
+{
+	dest[0] = msg.tipo_;
+	dest[1] = msg.origem_;
+	dest[2] = round(log2(msg.tamanho_));
+	if (msg.tipo_ != EXITO){
+		dest[3] = round(log2(msg.repeticoes_));
+	} else {
+		dest[3] = msg.repeticoes_;
+	}
+}
 vector<unsigned char> Mensagem::pack(const Mensagem& msg)
 {
 	vector<unsigned char> data(4);
-	data[0] = msg.tipo_;
-	data[1] = msg.origem_;
-	data[2] = round(log2(msg.tamanho_));
-	if (msg.tipo_ != EXITO){
-		data[3] = round(log2(msg.repeticoes_));
-	} else {
-		data[3] = msg.repeticoes_;
-	}
+	pack(data,msg);
 	return data;
 }
