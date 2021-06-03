@@ -48,7 +48,7 @@ public:
 		: BaseMulticastServer(io_service_,
 				      multicast_address,
 				      multicast_port)
-		, io_service(io_service)
+		, io_service(io_service_)
 		, endpoint(ip::tcp::v4(), server_port)
 		, acceptor(io_service, endpoint)
 	{
