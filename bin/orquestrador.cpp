@@ -321,9 +321,10 @@ int cli_exec_command(void *data_, int argc, const char **argv){
 				"Comandos disponíveis:\n"
 				"dispara\t\tRecebe como parâmetro o tamanho do pacote (em bytes) e \n"
 				"\t\to numero de repetições e inicia um teste\n"
+				"\t\tUsa a potência de 2 mais próxima do valor escolhido: round(log2(n))\n"
 				"desliga\t\tEnvia mensagem para terminar os outros hosts e em seguida\n"
-				"\t\tse desliga também.\n"
-				"exit\t\tTermina apenas o orquestrador. Envia comando desliga.\n";
+				"\t\tse desliga também\n"
+				"exit\t\tTermina apenas o orquestrador\n";
 		fputs(msg, stderr);
 	} else if (argv[0][0] == 0){
 	} else {
