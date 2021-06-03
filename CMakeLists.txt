@@ -15,10 +15,5 @@ SET(USED_LIBS ${Boost_SYSTEM_LIBRARY} ${Boost_THREAD_LIBRARY} ${Boost_REGEX_LIBR
 set(CMAKE_CXX_FLAGS "-O0 -g -Wall -std=c++98")
 set(CMAKE_C_FLAGS "-O0 -g -Wall -std=gnu99")
 
-add_subdirectory(libprobe)
-
-
-add_subdirectory(orquestrador)
-add_subdirectory(servidor)
-add_subdirectory(cliente)
-add_subdirectory(examples)
+add_subdirectory(lib)
+add_subdirectory(bin)
