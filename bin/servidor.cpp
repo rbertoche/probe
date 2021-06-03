@@ -159,17 +159,19 @@ public:
 #ifdef DEBUG_1
 			cerr << "mensagem de teste recebida: ";
 			dump(header);
-#else
+#else // DEBUG_1
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida" << endl;
-#endif
-#endif
+#endif // DEBUG
+#endif // DEBUG_1
 			Mensagem m_test(Mensagem::unpack(header));
+#ifndef NO_TESTS
 			if (m.tamanho() != m_test.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
 				cerr.flush();
 				return -3;
 			}
+#endif // NO_TESTS
 			if (m.tamanho() - header.size() > 0){
 				size_t read_bytes = 0;
 				try {
@@ -182,39 +184,41 @@ public:
 					cerr << e.code().message() << endl;
 					return -4;
 				}
+#ifdef NO_TESTS
 				if (read_bytes != (m.tamanho() - header.size())){
 					cerr << "Erro, fim prematuro da mensagem: ";
 					cerr << read_bytes << endl;
 					cerr.flush();
 					return -5;
 				}
+#endif // NO_TESTS
 #ifdef DEBUG
 				dump(conteudo);
-#endif
+#endif // DEBUG
 			}
 #ifdef DEBUG_1
 			cerr << "mensagem de teste recebida: ";
 			dump(conteudo);
-#else
+#else // DEBUG_1
 #ifdef DEBUG
 			cerr << "mensagem de teste recebida" << endl;
-#endif
-#endif
+#endif // DEBUG
+#endif // DEBUG_1
 			Mensagem m_resposta(ECO, origem_local, m.tamanho(), m.repeticoes());
 			header = Mensagem::pack(m_resposta);
-#ifdef DEBUG
+#ifdef DEBUG_1
 			cerr << "enviando resposta a mensagem de teste via tcp: ";
 			dump(header);
-#else
+#else // DEBUG_1
 #ifdef DEBUG
 			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
-#endif
-#endif
+#endif // DEBUG
+#endif // DEBUG_1
 			tcp_socket.send(buffer(header));
 			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
 #ifdef DEBUG
 					dump(conteudo);
-#endif
+#endif // DEBUG
 				tcp_socket.send(buffer(conteudo));
 			}
 		}
