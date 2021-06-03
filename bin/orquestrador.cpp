@@ -399,9 +399,9 @@ int main(int argc, char* argv[])
 		cerr << "       or\n";
 		cerr << "       orquestrador <multicast_address> <multicast_port>\n";
 		cerr << "  For IPv4, try:\n";
-		cerr << "    orquestrador 239.255.0.1 9900 127.0.0.1 8800\n";
+		cerr << "    orquestrador 239.255.0.1 9900\n";
 		cerr << "  For IPv6, try:\n";
-		cerr << "    orquestrador ff31::8000:1234 9900 127.0.0.1 8800\n";
+		cerr << "    orquestrador ff31::8000:1234 9900\n";
 		return 1;
 	}
 
