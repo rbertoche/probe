@@ -34,13 +34,19 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 	cerr << "desempacotando mensagem: ";
 	dump(data);
 #endif
+	unsigned repeticoes;
+	if (data[0] != EXITO) {
+		// 1024 repetições;
+		repeticoes = 1 << (data[3] >> 10 ? 10 : data[3]);
+	} else {
+		repeticoes = data[3];
+	}
 	return Mensagem((Tipo)data[0],
 			(Origem)data[1],
 			// Impede numeros muito grandes
 			// 65536 bytes
 			1 << (data[2] >> 16 ? 16 : data[2]),
-			// 1024 repetições
-			1 << (data[3] >> 10 ? 10 : data[3]));
+			repeticoes);
 }
 
 vector<unsigned char> Mensagem::pack(const Mensagem& msg)
@@ -49,6 +55,10 @@ vector<unsigned char> Mensagem::pack(const Mensagem& msg)
 	data[0] = msg.tipo_;
 	data[1] = msg.origem_;
 	data[2] = log2(msg.tamanho_);
-	data[3] = log2(msg.repeticoes_);
+	if (msg.tipo_ != EXITO){
+		data[3] = log2(msg.repeticoes_);
+	} else {
+		data[3] = msg.repeticoes_;
+	}
 	return data;
 }

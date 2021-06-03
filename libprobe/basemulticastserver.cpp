@@ -13,7 +13,7 @@
 
 #include "dump.h"
 
-#define DEBUG
+//#define DEBUG
 
 const int max_message_count = 10;
 

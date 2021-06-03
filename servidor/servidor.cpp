@@ -98,9 +98,9 @@ public:
 			Mensagem ack(DISPARA, origem_local, m.tamanho(), m.repeticoes());
 			send_to(socket_, Mensagem::pack(ack), origin);
 			// Executa teste
-			run_test(m);
+			int ret = run_test(m);
 			// Notifica fim do teste
-			Mensagem exito(EXITO, origem_local, m.tamanho(), m.repeticoes());
+			Mensagem exito(EXITO, origem_local, m.tamanho(), ret);
 			send_to(socket_, Mensagem::pack(exito), origin);
 			break;
 		}
@@ -110,7 +110,6 @@ public:
 			break;
 		case DESLIGA:
 		{
-			cerr << "what" << endl;
 			Mensagem ack(DESLIGA, origem_local, m.tamanho(), m.repeticoes());
 			send_to(socket_, Mensagem::pack(ack), origin);
 			cerr << "mensagem de shutdown recebida. Tchau!" << endl;
@@ -124,14 +123,14 @@ public:
 		}
 	}
 
-	void run_test(const Mensagem& m){
+	int run_test(const Mensagem& m){
 		if (m.tamanho() < 4){
 			cerr << "Erro, disparo de teste com tamanho inválido "
 			      << m.tamanho() << endl;
 //			cerr << "Erro tentando desempacotar mensagem "
 //				"de tamanho inválido "
 //			      << m.tamanho() << endl;
-			return;
+			return -1;
 		}
 
 		vector<unsigned char> header(4);
@@ -139,32 +138,65 @@ public:
 
 		ip::tcp::socket tcp_socket(io_service);
 		acceptor.accept(tcp_socket);
+		cerr << "Conexão aceita." << endl;
 
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
-			tcp_socket.receive(buffer(header));
-#ifdef DEBUG
+			size_t read_bytes;
+			try {
+				 read_bytes = tcp_socket.receive(buffer(header));
+			} catch (boost::system::system_error& e){
+				cerr << "Erro em receive: ";
+				cerr << e.what() << endl;
+				return -2;
+			}
+			if (read_bytes != 4){
+				cerr << "Não foi possível ler a mensagem.";
+				abort();
+			}
+#ifdef DEBUG_1
 			cerr << "mensagem de teste recebida: ";
 			dump(header);
 #else
+#ifdef DEBUG
 			cerr << "mensagem de teste recebida" << endl;
+#endif
 #endif
 			Mensagem m_test(Mensagem::unpack(header));
 			if (m.tamanho() != m_test.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
-				cerr << "Abortando!" << endl;
 				cerr.flush();
-				abort();
+				return -3;
 			}
 			if (m.tamanho() - header.size() > 0){
-				tcp_socket.receive(buffer(conteudo));
-				dump(conteudo);
-			}
+				size_t read_bytes = 0;
+				try {
+					while (read_bytes < m.tamanho() - header.size()){
+						read_bytes += tcp_socket.receive(buffer(conteudo));
+					}
+				} catch (boost::system::system_error& e){
+					cerr << e.what() << endl;
+					cerr << e.code() << endl;
+					cerr << e.code().message() << endl;
+					return -4;
+				}
+				if (read_bytes != (m.tamanho() - header.size())){
+					cerr << "Erro, fim prematuro da mensagem: ";
+					cerr << read_bytes << endl;
+					cerr.flush();
+					return -5;
+				}
 #ifdef DEBUG
+				dump(conteudo);
+#endif
+			}
+#ifdef DEBUG_1
 			cerr << "mensagem de teste recebida: ";
 			dump(conteudo);
 #else
+#ifdef DEBUG
 			cerr << "mensagem de teste recebida" << endl;
+#endif
 #endif
 			Mensagem m_resposta(ECO, origem_local, m.tamanho(), m.repeticoes());
 			header = Mensagem::pack(m_resposta);
@@ -172,7 +204,9 @@ public:
 			cerr << "enviando resposta a mensagem de teste via tcp: ";
 			dump(header);
 #else
+#ifdef DEBUG
 			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
+#endif
 #endif
 			tcp_socket.send(buffer(header));
 			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
@@ -182,6 +216,8 @@ public:
 				tcp_socket.send(buffer(conteudo));
 			}
 		}
+		cerr << "Teste completado" << endl;
+		return 0;
 	}
 };
 

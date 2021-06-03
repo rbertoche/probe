@@ -13,5 +13,6 @@ void dump(const vector<unsigned char>& data){
 	     it++){
 		cerr << setw(2) << hex << unsigned(*it) << " ";
 	}
+	cerr << dec;
 	cerr << "FIM" << endl;
 }
