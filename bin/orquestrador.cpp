@@ -415,6 +415,10 @@ int main(int argc, char* argv[])
 
 	io_service.run();
 
+	if(_int_happened){
+		kill(0, SIGINT);
+	}
+
 	return 0;
 }
 
