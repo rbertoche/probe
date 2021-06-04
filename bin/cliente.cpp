@@ -126,8 +126,7 @@ public:
 			return -1;
 		}
 		cerr << "inciando teste" << endl;
-		vector<unsigned char> header(4);
-		vector<unsigned char> conteudo(m.tamanho() - 4);
+		vector<unsigned char> buffer_(m.tamanho());
 
 		ip::tcp::socket tcp_socket(io_service);
 		try {
@@ -139,20 +138,26 @@ public:
 			abort();
 		}
 
-		cerr << "Conectando em " << endpoint << endl;
+		cerr << "Conectado em " << endpoint << endl;
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
+			cerr << "i: " << i << "; r: " << m.repeticoes() << endl;
 			Mensagem m_test(ECO, origem_local, m.tamanho(), m.repeticoes());
-			header = Mensagem::pack(m_test);
+			Mensagem::pack(buffer_, m_test);
 			// Timing!
+
 #ifdef DEBUG_1
-			cerr << "enviando mensagem de teste via tcp:\t";
-			dump(header);
+			cerr << "enviando resposta a mensagem de teste via tcp: ";
+			dump(buffer_);
 #else // DEBUG_1
 #ifdef DEBUG
-			cerr << "enviando mensagem de teste via tcp" << endl;
+			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
+			buffer_[5] = 5;
+			buffer_[buffer_.size() - 1] = buffer_.size() - 1;
+
+			size_t sent_bytes = 0;
 			try {
 //				cout << 2 << " " << rt_clock() - time_0 << endl;
 				tcp_socket.send(buffer(header));
@@ -162,73 +167,47 @@ public:
 				cerr << err.what() << endl;
 				return -2;
 			}
-			if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
-//				cout << 4 << " " << rt_clock() - time_0 << endl;
-				tcp_socket.send(buffer(conteudo));
-//				cout << 5 << " " << rt_clock() - time_0 << endl;
 #ifdef DEBUG_1
-				dump(conteudo);
-#endif // DEBUG_1
-			}
-#ifdef DEBUG
-			cerr << "leitura bloqueante..." << endl;
-#endif // DEBUG
-			size_t read_bytes;
-			try {
-//				cout << 6 << " " << rt_clock() - time_0 << endl;
-				read_bytes = tcp_socket.receive(buffer(header));
-//				cout << 7 << " " << rt_clock() - time_0 << endl;
-			} catch (boost::system::system_error const& err){
-				cerr << "Error on receive: ";
-				cerr << err.what() << endl;
-				return -3;
-			}
-			if (read_bytes != 4){
-				cerr << "Não foi possível ler a mensagem.";
-				abort();
-			}
-#ifdef DEBUG_1
-			cerr << "mensagem recebida via tcp: ";
-			dump(header);
+			cerr << "enviado mensagem de teste via tcp:\t";
+			dump(buffer_);
 #else // DEBUG_1
 #ifdef DEBUG
-			cerr << "mensagem recebida via tcp" << endl;
+			cerr << "enviado mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			Mensagem m_resposta(Mensagem::unpack(header));
+			size_t read_bytes = 0;
+			try {
+				while (read_bytes < m.tamanho()){
+					read_bytes += tcp_socket.receive(buffer(buffer_.data() +
+										read_bytes,
+										buffer_.size() -
+										read_bytes));
+				}
+			} catch (boost::system::system_error& e){
+				cerr << "Error on receive: ";
+				cerr << e.what() << endl;
+				return -3;
+			}
+			cerr << hex << unsigned(buffer_[5]) << " "
+			     << unsigned(buffer_[buffer_.size() - 1]) << endl;
+			cerr << dec;
+			Mensagem m_resposta(Mensagem::unpack(buffer_));
 			if (m.tamanho() != m_resposta.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
 				cerr.flush();
 				return -4;
+			} else if (read_bytes != m.tamanho()){
+				cerr << "Erro, fim prematuro da mensagem: ";
+				cerr << read_bytes << endl;
+				cerr.flush();
+				return -5;
 			} else if (m_resposta.tipo() != ECO){
 				cerr << "Erro, recebi mensagem de tipo "
 				     << m_resposta.tipo() << " incorreto. ";
 				cerr.flush();
 				return -5;
-			} else {
-				if (conteudo.size()){ // Trata teste com 4 bytes (sem conteudo)
-					size_t read_bytes = 0;
-
-//					cout << 8 << " " << rt_clock() - time_0 << endl;
-					while (read_bytes < m.tamanho() - header.size()){
-						read_bytes += tcp_socket.receive(buffer(conteudo));
-					}
-//					cout << 9 << " " << rt_clock() - time_0 << endl;
-					if (read_bytes != (m.tamanho() - header.size())){
-						cerr << "Erro, fim prematuro da mensagem.";
-						cerr.flush();
-						return -3;
-					} else {
-#ifdef DEBUG
-						cerr << "eco ok." << endl;
-#endif // DEBUG
-					}
-#ifdef DEBUG_1
-					dump(conteudo);
-#endif // DEBUG_1
-				}
-				// Timing!
 			}
+				// Timing!
 		}
 //		cout << 10 << " " << rt_clock() - time_0 << endl;
 		cerr << "Teste completado com sucesso." << endl;
