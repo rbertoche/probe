@@ -53,7 +53,10 @@ public:
 		return repeticoes_;
 	}
 
-
 };
+
+// Valores expressos em potencias de 2
+const unsigned TAMANHO_MAX = 31;
+const unsigned REPETICOES_MAX = 20;
 
 #endif // MENSAGEM_H

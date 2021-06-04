@@ -38,16 +38,13 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 #endif
 	unsigned repeticoes;
 	if (data[0] != EXITO) {
-		// 1024 repetições;
-//		repeticoes = 1 << (data[3] > 31 ? 31 : data[3]);
+		repeticoes = 1 << (data[3] > REPETICOES_MAX ? REPETICOES_MAX : data[3]);
 	} else {
 		repeticoes = data[3];
 	}
 	return Mensagem((Tipo)data[0],
 			(Origem)data[1],
-			// Impede numeros muito grandes
-			// 65536 bytes
-			1 << (data[2] > 20 ? 20 : data[2]),
+			1 << (data[2] > TAMANHO_MAX ? TAMANHO_MAX : data[2]),
 			repeticoes);
 }
 
