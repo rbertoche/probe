@@ -30,7 +30,7 @@ Mensagem Mensagem::unpack(const vector<unsigned char>& data)
 		cerr.flush();
 		abort();
 	}
-#ifndef DEBUG_1
+#ifdef DEBUG_1
 	cerr << "desempacotando mensagem: ";
 	vector<unsigned char> v(4);
 	copy(data.begin(), data.begin()+4, v.begin());
