@@ -10,6 +10,7 @@
 #include <strstream>
 #include <iomanip>
 #include <fstream>
+#include <numeric>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -48,6 +49,7 @@ public:
 
 	static const Origem origem_local = CLIENTE;
 	ofstream rtt_file;
+	vector<double> rtt;
 
 
 	virtual void respond(ip::udp::endpoint /*origin*/,
@@ -88,17 +90,25 @@ public:
 			Mensagem ack(DISPARA, origem_local, m.tamanho(), m.repeticoes());
 			send_to(socket_, Mensagem::pack(ack), origin);
 			// Executa teste
-			time_0 = rt_clock();
 			int ret = run_test(m);
-			double rtt = rt_clock() - time_0;
-			// Notifica fim do teste
-			rtt_file << setw(2) << setprecision(5);
-			rtt_file << long(time_0) << "\t"
-				 << endpoint << "\t"
-				 << m.tamanho() << "\t"
-				 << m.repeticoes() << "\t"
-				 << rtt << endl;
+			double average = std::accumulate(rtt.begin(), rtt.end(), 0.0) / rtt.size();
+			double variance = 0;
+			for (vector<double>::const_iterator it = rtt.begin();
+			     it < rtt.end();
+			     it++){
+				variance += pow(*it - average, 2);
+			}
+			double st_dev = sqrt(variance / m.repeticoes());
+
+			rtt_file << fixed << showpoint
+				 << long(time_0) << " "
+				 << setw(20) << endpoint << " "
+				 << setw(10) << m.tamanho() << " "
+				 << setw(8) << m.repeticoes() << " "
+				 << setw(8) << average << " "
+				 << setw(8) << st_dev << endl;
 			rtt_file.flush();
+			// Notifica fim do teste
 			Mensagem exito(EXITO, origem_local, m.tamanho(), ret);
 			send_to(socket_, Mensagem::pack(exito), origin);
 			break;
@@ -128,7 +138,7 @@ public:
 		}
 		cerr << "inciando teste" << endl;
 		vector<unsigned char> buffer_(m.tamanho());
-
+		rtt.resize(m.repeticoes());
 #ifdef CONTEUDO_NAO_NULO
 		for (vector<unsigned char>::iterator it= buffer_.begin();
 		     it < buffer_.end();
@@ -172,6 +182,8 @@ public:
 			buffer_[content_1] = content_1;
 			buffer_[content_2] = content_2;
 
+
+			time_0 = rt_clock();
 			size_t sent_bytes = 0;
 			try {
 				sent_bytes = write(tcp_socket, buffer(buffer_));
@@ -180,6 +192,8 @@ public:
 				cerr << e.what() << endl;
 				return -3;
 			}
+
+			double rtt_sum = rt_clock() - time_0;
 #ifdef DEBUG_1
 			cerr << "enviado mensagem de teste via tcp:\t";
 			dump(buffer_);
@@ -188,6 +202,7 @@ public:
 			cerr << "enviado mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
+			t = rt_clock();
 			size_t read_bytes = 0;
 			try {
 				read_bytes = read(tcp_socket, buffer(buffer_));
@@ -196,6 +211,9 @@ public:
 				cerr << e.what() << endl;
 				return -3;
 			}
+			rtt_sum += rt_clock() - time_0;
+			rtt[i] = rtt_sum;
+
 #ifdef DEBUG
 			cerr << hex << unsigned(buffer_[5]) << " "
 			     << unsigned(buffer_[buffer_.size() - 1]) << endl;
