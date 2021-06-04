@@ -129,6 +129,13 @@ public:
 		cerr << "inciando teste" << endl;
 		vector<unsigned char> buffer_(m.tamanho());
 
+#ifdef CONTEUDO_NAO_NULO
+		for (vector<unsigned char>::iterator it= buffer_.begin();
+		     it < buffer_.end();
+		     it++){
+			*it = it - buffer_.begin();
+		}
+#endif // CONTEUDO_NAO_NULO
 		ip::tcp::socket tcp_socket(io_service);
 		try {
 //			cout << 1 << " " << rt_clock() - time_0 << endl;
