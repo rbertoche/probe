@@ -160,8 +160,9 @@ public:
 			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			buffer_[5] = 5;
-			buffer_[buffer_.size() - 1] = buffer_.size() - 1;
+			const unsigned content_1 = 5, content_2 = buffer_.size() - 1;
+			buffer_[content_1] = content_1;
+			buffer_[content_2] = content_2;
 
 			size_t sent_bytes = 0;
 			try {
@@ -187,24 +188,32 @@ public:
 				cerr << e.what() << endl;
 				return -3;
 			}
+#ifdef DEBUG
 			cerr << hex << unsigned(buffer_[5]) << " "
 			     << unsigned(buffer_[buffer_.size() - 1]) << endl;
 			cerr << dec;
+#endif // DEBUG
 			Mensagem m_resposta(Mensagem::unpack(buffer_));
 			if (m.tamanho() != m_resposta.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. " << endl;
 				cerr.flush();
-				return -4;
+				return -5;
 			} else if (read_bytes != m.tamanho()){
 				cerr << "Erro, fim prematuro da mensagem: ";
 				cerr << read_bytes << endl;
 				cerr.flush();
-				return -5;
+				return -6;
 			} else if (m_resposta.tipo() != ECO){
 				cerr << "Erro, recebi mensagem de tipo "
 				     << m_resposta.tipo() << " incorreto. " << endl;
 				cerr.flush();
-				return -6;
+				return -7;
+			} else if(buffer_[content_1] != content_1 ||
+					buffer_[content_2] != uint8_t(content_2))
+			{
+				cerr << "Erro, conteúdo não preservado. " << endl;
+				cerr.flush();
+				return -5;
 			}
 				// Timing!
 		}
