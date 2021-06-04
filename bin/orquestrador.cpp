@@ -302,17 +302,17 @@ int cli_exec_command(void *data_, int argc, const char **argv){
 	if (strcmp(argv[0], "dispara") == 0){
 		if( check_arg_count(argc, argv, 2) == 0) {
 			unsigned tamanho = atoi(argv[1]);
-			if (tamanho < 4 || tamanho > 1 << TAMANHO_MAX){
+			if (tamanho < 4 || tamanho > 1u << TAMANHO_MAX){
 				cerr << "Tamanho " << tamanho
 				     << " fora do escopo, entre um valor entre 4 e "
-				     << unsigned(1 << TAMANHO_MAX) << "." << endl;
+				     << (1u << TAMANHO_MAX) << "." << endl;
 				return 0;
 			}
-			int repeticoes = atoi(argv[2]);
-			if (repeticoes < 1 || repeticoes > 1 << REPETICOES_MAX){
+			unsigned repeticoes = atoi(argv[2]);
+			if (repeticoes < 1 || repeticoes > 1u << REPETICOES_MAX){
 				cerr << "Número de repetições " << repeticoes
 				     << " fora do escopo, entre um valor entre 1 e "
-				     <<  unsigned(1 << REPETICOES_MAX) << "." << endl;
+				     <<  (1u << REPETICOES_MAX) << "." << endl;
 				return 0;
 			}
 			signal(SIGINT, int_handler_ask);
