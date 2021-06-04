@@ -300,7 +300,7 @@ int cli_exec_command(void *data_, int argc, const char **argv){
 
 	if (strcmp(argv[0], "dispara") == 0){
 		if( check_arg_count(argc, argv, 2) == 0) {
-			int tamanho = atoi(argv[1]);
+			unsigned tamanho = atoi(argv[1]);
 			if (tamanho < 4 || tamanho > 1 << 20){
 				cerr << "Tamanho " << tamanho
 				     << "inválido, entre um valor entre 4 e 65535." << endl;
