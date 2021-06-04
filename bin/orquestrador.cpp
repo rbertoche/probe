@@ -372,25 +372,6 @@ void cli_handler(Orquestrador* orquestrador,
 	orquestrador->close();
 }
 
-class ThreadJoiner
-{
-public:
-	ThreadJoiner(boost::thread& thread)
-	: thread_(thread)
-	{}
-
-	~ThreadJoiner(){
-		// Espera pela thread apenas caso não tenha
-		// ocorrido uma interrupção
-		if (thread_.joinable() && !_int_happened){
-//			thread_.join();
-		}
-	}
-
-protected:
-	boost::thread& thread_;
-};
-
 int main(int argc, char* argv[])
 {
 	if (argc != 3)
