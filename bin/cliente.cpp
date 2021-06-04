@@ -159,13 +159,17 @@ public:
 
 			size_t sent_bytes = 0;
 			try {
-//				cout << 2 << " " << rt_clock() - time_0 << endl;
-				tcp_socket.send(buffer(header));
-//				cout << 3 << " " << rt_clock() - time_0 << endl;
-			} catch (boost::system::system_error const& err){
-				cerr << "Error on receive: ";
-				cerr << err.what() << endl;
-				return -2;
+				while (sent_bytes < m.tamanho()){
+					sent_bytes += tcp_socket.send(buffer(buffer_.data() +
+									     sent_bytes,
+									     buffer_.size() -
+									     sent_bytes));
+					cerr << sent_bytes << endl;
+				}
+			} catch (boost::system::system_error& e){
+				cerr << "Error on send: ";
+				cerr << e.what() << endl;
+				return -3;
 			}
 #ifdef DEBUG_1
 			cerr << "enviado mensagem de teste via tcp:\t";

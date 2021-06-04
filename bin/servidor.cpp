@@ -193,7 +193,20 @@ public:
 			cerr << "enviando resposta a mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			tcp_socket.send(buffer(buffer_));
+			size_t sent_bytes = 0;
+			try {
+				while (sent_bytes < m.tamanho()){
+					sent_bytes += tcp_socket.send(buffer(buffer_.data() +
+									     sent_bytes,
+									     buffer_.size() -
+									     sent_bytes));
+					cerr << sent_bytes << endl;
+				}
+			} catch (boost::system::system_error& e){
+				cerr << "Error on send: ";
+				cerr << e.what() << endl;
+				return -3;
+			}
 		}
 		cerr << "Teste completado" << endl;
 		return 0;
