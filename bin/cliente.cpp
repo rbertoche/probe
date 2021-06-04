@@ -145,7 +145,8 @@ public:
 		{
 			double t = rt_clock();
 			if (t - i_time > 0.5){
-				cerr << "i: " << i << "; r: " << m.repeticoes() << endl;
+				cerr << "Iniciando repetição " << i + 1 << " / "
+				     << m.repeticoes() << endl;
 				i_time = t;
 			}
 			Mensagem m_test(ECO, origem_local, m.tamanho(), m.repeticoes());
