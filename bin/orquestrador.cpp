@@ -83,6 +83,7 @@ public:
 		exito_cliente = false;
 		ack_servidor = false;
 		ack_cliente = false;
+		teste_falhou = false;
 		Mensagem m(DISPARA, origem_local, tamanho, repeticoes);
 		vector<unsigned char> data = Mensagem::pack(m);
 		teste_acontecendo = true;
