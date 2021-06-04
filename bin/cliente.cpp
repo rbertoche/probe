@@ -139,10 +139,15 @@ public:
 			abort();
 		}
 
+		double i_time = 0;
 		cerr << "Conectado em " << endpoint << endl;
 		for (unsigned int i=0; i < m.repeticoes(); i++)
 		{
-			cerr << "i: " << i << "; r: " << m.repeticoes() << endl;
+			double t = rt_clock();
+			if (t - i_time > 0.5){
+				cerr << "i: " << i << "; r: " << m.repeticoes() << endl;
+				i_time = t;
+			}
 			Mensagem m_test(ECO, origem_local, m.tamanho(), m.repeticoes());
 			Mensagem::pack(buffer_, m_test);
 			// Timing!
