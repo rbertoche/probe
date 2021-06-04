@@ -146,16 +146,10 @@ public:
 		{
 			size_t read_bytes = 0;
 			try {
-				while (read_bytes < m.tamanho()){
-					read_bytes += tcp_socket.receive(buffer(buffer_.data() +
-										read_bytes,
-										buffer_.size() -
-										read_bytes));
-				}
+				read_bytes = read(tcp_socket, buffer(buffer_));
 			} catch (boost::system::system_error& e){
+				cerr << "Error on read: ";
 				cerr << e.what() << endl;
-				cerr << e.code() << endl;
-				cerr << e.code().message() << endl;
 				return -4;
 			}
 #ifdef DEBUG_1
@@ -195,13 +189,7 @@ public:
 #endif // DEBUG_1
 			size_t sent_bytes = 0;
 			try {
-				while (sent_bytes < m.tamanho()){
-					sent_bytes += tcp_socket.send(buffer(buffer_.data() +
-									     sent_bytes,
-									     buffer_.size() -
-									     sent_bytes));
-					cerr << sent_bytes << endl;
-				}
+				sent_bytes = write(tcp_socket, buffer(buffer_));
 			} catch (boost::system::system_error& e){
 				cerr << "Error on send: ";
 				cerr << e.what() << endl;
