@@ -94,6 +94,7 @@ public:
 			// Notifica fim do teste
 			rtt_file << setw(2) << setprecision(5);
 			rtt_file << long(time_0) << "\t"
+				 << endpoint << "\t"
 				 << m.tamanho() << "\t"
 				 << m.repeticoes() << "\t"
 				 << rtt << endl;
