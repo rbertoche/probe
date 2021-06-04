@@ -192,7 +192,7 @@ public:
 			cerr << dec;
 			Mensagem m_resposta(Mensagem::unpack(buffer_));
 			if (m.tamanho() != m_resposta.tamanho()){
-				cerr << "Erro, recebi mensagem de tamanho incorreto. ";
+				cerr << "Erro, recebi mensagem de tamanho incorreto. " << endl;
 				cerr.flush();
 				return -4;
 			} else if (read_bytes != m.tamanho()){
@@ -202,7 +202,7 @@ public:
 				return -5;
 			} else if (m_resposta.tipo() != ECO){
 				cerr << "Erro, recebi mensagem de tipo "
-				     << m_resposta.tipo() << " incorreto. ";
+				     << m_resposta.tipo() << " incorreto. " << endl;
 				cerr.flush();
 				return -6;
 			}
