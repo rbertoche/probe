@@ -78,7 +78,7 @@ public:
 		io_service_.stop();
 	}
 
-	void dispara(uint16_t tamanho, uint16_t repeticoes){
+	void dispara(unsigned tamanho, unsigned repeticoes){
 		exito_servidor = false;
 		exito_cliente = false;
 		ack_servidor = false;
