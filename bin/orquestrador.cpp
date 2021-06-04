@@ -304,15 +304,15 @@ int cli_exec_command(void *data_, int argc, const char **argv){
 			unsigned tamanho = atoi(argv[1]);
 			if (tamanho < 4 || tamanho > 1 << TAMANHO_MAX){
 				cerr << "Tamanho " << tamanho
-				     << "inválido, entre um valor entre 4 e "
-				     << (1 << TAMANHO_MAX) << "." << endl;
+				     << " fora do escopo, entre um valor entre 4 e "
+				     << unsigned(1 << TAMANHO_MAX) << "." << endl;
 				return 0;
 			}
 			int repeticoes = atoi(argv[2]);
 			if (repeticoes < 1 || repeticoes > 1 << REPETICOES_MAX){
 				cerr << "Número de repetições " << repeticoes
-				     << "fora do escopo, entre um valor entre 1 e "
-				     <<  (1 << REPETICOES_MAX) << "." << endl;
+				     << " fora do escopo, entre um valor entre 1 e "
+				     <<  unsigned(1 << REPETICOES_MAX) << "." << endl;
 				return 0;
 			}
 			signal(SIGINT, int_handler_ask);
