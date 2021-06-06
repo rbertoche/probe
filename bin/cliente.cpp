@@ -193,7 +193,6 @@ public:
 				return -3;
 			}
 
-			double rtt_sum = rt_clock() - time_0;
 #ifdef DEBUG_1
 			cerr << "enviado mensagem de teste via tcp:\t";
 			dump(buffer_);
@@ -202,7 +201,6 @@ public:
 			cerr << "enviado mensagem de teste via tcp" << endl;
 #endif // DEBUG
 #endif // DEBUG_1
-			t = rt_clock();
 			size_t read_bytes = 0;
 			try {
 				read_bytes = read(tcp_socket, buffer(buffer_));
@@ -211,8 +209,7 @@ public:
 				cerr << e.what() << endl;
 				return -3;
 			}
-			rtt_sum += rt_clock() - time_0;
-			rtt[i] = rtt_sum;
+			rtt[i] = rt_clock() - time_0;
 
 #ifdef DEBUG
 			cerr << hex << unsigned(buffer_[5]) << " "
