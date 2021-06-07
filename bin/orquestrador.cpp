@@ -195,6 +195,9 @@ public:
 				cerr << "Servidor respondeu com êxito: ";
 				dump(Mensagem::pack(m));
 				exito_servidor = true;
+				if (!ack_servidor){
+					cerr << "Mas não recebi ack ao dispara." << endl;
+				}
 				if (exito_servidor && exito_cliente){
 					fim_do_teste();
 				}
@@ -203,6 +206,9 @@ public:
 				cerr << "Cliente respondeu com êxito: ";
 				dump(Mensagem::pack(m));
 				exito_cliente = true;
+				if (!ack_cliente){
+					cerr << "Mas não recebi ack ao dispara." << endl;
+				}
 				if (exito_servidor && exito_cliente){
 					fim_do_teste();
 				}
