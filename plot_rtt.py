@@ -21,6 +21,16 @@ if len(sys.argv) < 3:
 with open(sys.argv[1]) as f:
     data = map(unpack, f)
 
+def length_label(length):
+    if length < 1024:
+        return '{0}B'.format(length)
+    elif length < 1024**2:
+        return '{0}KB'.format(length / 1024)
+    elif length < 1024**3:
+        return '{0}MB'.format(length / 1024**2)
+    else:
+        return '{0}GB'.format(length / 1024**3)
+
 def plot(data):
     length = np.array([s.length for s in data])
     rtt = np.array([s.rtt for s in data])
@@ -32,7 +42,7 @@ def plot(data):
 
     ax = plt.gca()
     ax.set_xticks(xrange(len(data)))
-    ax.set_xticklabels(map(str, length))
+    ax.set_xticklabels(map(length_label, length))
     plt.ylim(ymin=0.0)
     ax.set_xlabel('Tamanho (bytes)')
     ax.set_ylabel('RTT (s)')
