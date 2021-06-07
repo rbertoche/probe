@@ -147,13 +147,23 @@ public:
 		}
 #endif // CONTEUDO_NAO_NULO
 		ip::tcp::socket tcp_socket(io_service);
-		try {
-//			cout << 1 << " " << rt_clock() - time_0 << endl;
-			tcp_socket.connect(endpoint);
-		} catch (boost::system::system_error const& err){
-			cerr << "Error on connect: ";
-			cerr << err.what() << endl;
-			abort();
+		const int max_retries = 5;
+		int retries = 0;
+		while (true){
+			try {
+	//			cout << 1 << " " << rt_clock() - time_0 << endl;
+				tcp_socket.connect(endpoint);
+				break;
+			} catch (boost::system::system_error const& err){
+				if (err.code().value() == ECONNREFUSED
+				    && (retries++ < max_retries)){
+					cerr << "retry" << endl;
+					continue;
+				}
+				cerr << "Error on connect: ";
+				cerr << err.what() << endl;
+				abort();
+			}
 		}
 
 		double i_time = 0;
