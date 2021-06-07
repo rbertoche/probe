@@ -211,11 +211,18 @@ public:
 			}
 			rtt[i] = rt_clock() - time_0;
 
+
+#ifdef DEBUG_1
+			cerr << "mensagem de teste recebida via tcp:\t";
+			dump(buffer_);
+#else // DEBUG_1
 #ifdef DEBUG
+			cerr << "mensagem de teste recebida via tcp" << endl;
 			cerr << hex << unsigned(buffer_[5]) << " "
 			     << unsigned(buffer_[buffer_.size() - 1]) << endl;
 			cerr << dec;
 #endif // DEBUG
+#endif // DEBUG_1
 			Mensagem m_resposta(Mensagem::unpack(buffer_));
 			if (m.tamanho() != m_resposta.tamanho()){
 				cerr << "Erro, recebi mensagem de tamanho incorreto. " << endl;
