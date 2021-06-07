@@ -34,6 +34,8 @@ def plot(data):
     ax.set_xticks(xrange(len(data)))
     ax.set_xticklabels(map(str, length))
     plt.ylim(ymin=0.0)
+    ax.set_xlabel('Tamanho (bytes)')
+    ax.set_ylabel('RTT (s)')
 
     plt.show()
 
