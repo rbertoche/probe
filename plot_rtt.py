@@ -36,6 +36,7 @@ def plot(data):
     plt.ylim(ymin=0.0)
     ax.set_xlabel('Tamanho (bytes)')
     ax.set_ylabel('RTT (s)')
+    plt.xticks(rotation=60)
 
     plt.show()
 
