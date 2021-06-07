@@ -15,8 +15,8 @@ def unpack(line):
     s = line.split()
     return sample(*(unpackers[i](s[i]) for i in xrange(len(s))))
 
-if len(sys.argv) < 2:
-    print 'usage: {0} rtt_file'.format(sys.argv[0])
+if len(sys.argv) < 3:
+    print 'usage: {0} rtt_file "Titulo"'.format(sys.argv[0])
 
 with open(sys.argv[1]) as f:
     data = map(unpack, f)
@@ -37,6 +37,7 @@ def plot(data):
     ax.set_xlabel('Tamanho (bytes)')
     ax.set_ylabel('RTT (s)')
     plt.xticks(rotation=60)
+    plt.title(sys.argv[2])
 
     plt.show()
 
