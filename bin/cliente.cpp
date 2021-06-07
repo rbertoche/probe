@@ -105,7 +105,7 @@ public:
 				 << setw(20) << endpoint << " "
 				 << setw(10) << m.tamanho() << " "
 				 << setw(8) << m.repeticoes() << " "
-				 << setw(8) << average << " "
+				 << setw(11) << average << " "
 				 << setw(8) << st_dev << endl;
 			rtt_file.flush();
 			// Notifica fim do teste
