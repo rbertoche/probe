@@ -51,6 +51,6 @@ def plot(data):
 
     plt.show()
 
-for k in xrange(0, len(data), 10):
-    plot(data[k:k+10])
+for k in xrange(0, len(data), 15):
+    plot(data[k:k+15])
 
