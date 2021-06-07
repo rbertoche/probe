@@ -174,7 +174,7 @@ public:
 					exito_servidor = true;
 					break;
 				case CLIENTE:
-					cerr << "Servidor respondeu notificando falha no teste: ";
+					cerr << "Cliente respondeu notificando falha no teste: ";
 					exito_cliente = true;
 					break;
 				default:
