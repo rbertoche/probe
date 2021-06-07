@@ -18,7 +18,7 @@ set(HEADERS
 )
 
 
-add_library(${PROJECT_NAME} ${SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 #TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${USED_LIBS})
 
